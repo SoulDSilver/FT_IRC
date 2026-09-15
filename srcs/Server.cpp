@@ -1,14 +1,12 @@
 #include "Server.hpp"
 
-static int forward_port;
-
 template <typename T>
 static T max(T a, T b)
 {
     return (a > b) ? a : b;
 }
 
-static int listen_socket(int listen_port)
+int listen_socket(int listen_port)
 {
     struct sockaddr_in addr;
     int lfd;
