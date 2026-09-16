@@ -26,7 +26,9 @@ int Client::getFd() const
     return fd;
 }
 
-const std::string &Client::getPassword() const
+const std::string &Client::getUsername() const
 {
+    // TODO: inserir instrução return aqui
     return username;
 }
+

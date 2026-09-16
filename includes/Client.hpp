@@ -6,13 +6,13 @@ private:
     int fd;
     std::string nickname;
     std::string username;
-
-public:
+    
+    public:
     Client();
     Client(int fd, const std::string &password);
     Client(const Client &other);
     Client &operator=(const Client &other);
     ~Client();
     int getFd() const;
-    const std::string &getPassword() const ;
+    const std::string &getUsername() const ;
 };

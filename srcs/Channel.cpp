@@ -18,6 +18,11 @@ Channel &Channel::operator=(const Channel &other)
 
 Channel::~Channel() {}
 
+void Channel::addClient(const Client &client)
+{
+    (void)client;
+}
+
 void Channel::removeClient(const Client &client)
 {
     (void)client;

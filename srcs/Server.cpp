@@ -5,7 +5,7 @@ template <typename T> static T max(T a, T b)
 	return ((a > b) ? a : b);
 }
 
-int	listen_socket(int listen_port)
+int	Server::listen_socket(int listen_port)
 {
 	struct sockaddr_in	addr;
 	int					lfd;
@@ -52,10 +52,13 @@ int	listen_socket(int listen_port)
 
 Server::Server() : listen_port(0), password(""), listen_fd(-1) {}
 
-Server::Server(int port, const std::string& password)
-    : listen_port(port), password(password), listen_fd(listen_socket(port)) {}
 
-Server::Server(const Server& other)
+Server::Server(int port) : listen_port(port), password("my")
+{
+	listen_fd = listen_socket(port);
+}
+
+Server::Server(const Server &other)
     : listen_port(other.listen_port), password(other.password), listen_fd(other.listen_fd) {}
 
 Server& Server::operator=(const Server& other)
@@ -63,7 +66,7 @@ Server& Server::operator=(const Server& other)
     if (this != &other)
     {
         listen_port = other.listen_port;
-        password = other.password;
+        //password = other.password;
         listen_fd = other.listen_fd;
     }
     return *this;
@@ -78,4 +81,14 @@ Server::~Server()
 void Server::run()
 {
     (void)listen_fd;
+}
+
+int Server::getListenPort() const
+{
+    return listen_port;
+}
+
+int Server::getListenFd() const
+{
+    return listen_fd;
 }

@@ -1,21 +1,23 @@
-#include "irc.hpp"
+#pragma once
 
-class Client;
+#include "irc.hpp"
+#include "Client.hpp"
+
 
 class Channel
 {
-    private:
-        std::string name;
-        std::vector<Client> clients;
+private:
+    std::string name;
+    std::vector<Client> clients;
 
-    public:
-        Channel();
-        Channel(const std::string& name);
-        Channel(const Channel& other);
-        Channel& operator=(const Channel& other);
-        ~Channel();
-        const std::string& getName() const { return name; }
-        const std::vector<Client>& getClients() const { return clients; }
-        void addClient(const Client& client) { clients.push_back(client); }
-        void removeClient(const Client& client);
+public:
+    Channel();
+    Channel(const std::string &name);
+    Channel(const Channel &other);
+    Channel &operator=(const Channel &other);
+    ~Channel();
+    const std::string &getName() const; 
+    const std::vector<Client> &getClients() const;
+    void addClient(const Client &client);
+    void removeClient(const Client &client);
 };
