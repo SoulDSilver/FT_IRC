@@ -38,13 +38,13 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@printf "$(GREEN)Linking $(NAME)...$(RESET)\n"
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 	@printf "$(GREEN)$(NAME) ready.$(RESET)\n"
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@printf "$(BLUE)Compiling $<$(RESET)\n"
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	@rm -rf $(OBJDIR)

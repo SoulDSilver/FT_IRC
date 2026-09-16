@@ -1,13 +1,16 @@
 #pragma once
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+#include <map>
 #include <unistd.h>
 #include <sys/select.h>
-#include <string.h>
-#include <signal.h>
+#include <cstring>
+#include <csignal>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <errno.h>
+#include <cerrno>
+#include <fcntl.h>
 
