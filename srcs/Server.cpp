@@ -50,6 +50,32 @@ int	listen_socket(int listen_port)
 	return (lfd);
 }
 
-Server::Server()
+Server::Server() : listen_port(0), password(""), listen_fd(-1) {}
+
+Server::Server(int port, const std::string& password)
+    : listen_port(port), password(password), listen_fd(listen_socket(port)) {}
+
+Server::Server(const Server& other)
+    : listen_port(other.listen_port), password(other.password), listen_fd(other.listen_fd) {}
+
+Server& Server::operator=(const Server& other)
 {
+    if (this != &other)
+    {
+        listen_port = other.listen_port;
+        password = other.password;
+        listen_fd = other.listen_fd;
+    }
+    return *this;
+}
+
+Server::~Server()
+{
+    if (listen_fd != -1)
+        close(listen_fd);
+}
+
+void Server::run()
+{
+    (void)listen_fd;
 }

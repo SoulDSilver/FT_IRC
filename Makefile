@@ -26,6 +26,7 @@ SRCS = \
 	srcs/Server.cpp \
 	srcs/Client.cpp \
 	srcs/Channel.cpp \
+	srcs/Commands.cpp \
 	srcs/commands_files/Registration.cpp \
 	srcs/commands_files/ChannelCommands.cpp \
 	srcs/commands_files/OperatorCommands.cpp \
