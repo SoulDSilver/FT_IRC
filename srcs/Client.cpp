@@ -1,19 +1,18 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), nickname(""), username("") {}
+Client::Client() : fd(-1), ipAddr(""), username("") {}
 
-Client::Client(int fd, const std::string &password)
-    : fd(fd), nickname(""), username(password) {}
+
 
 Client::Client(const Client &other)
-    : fd(other.fd), nickname(other.nickname), username(other.username) {}
+    : fd(other.fd), ipAddr(other.ipAddr), username(other.username) {}
 
 Client &Client::operator=(const Client &other)
 {
     if (this != &other)
     {
         fd = other.fd;
-        nickname = other.nickname;
+        ipAddr = other.ipAddr;
         username = other.username;
     }
     return *this;
@@ -25,10 +24,26 @@ int Client::getFd() const
 {
     return fd;
 }
+void Client::setFd(int fd)
+{
+    this->fd = fd;
+}
+
+const std::string &Client::getIpAddr() const
+{
+    return ipAddr;
+}
+void Client::setIpAddr(const std::string &ipAddr)
+{
+    this->ipAddr = ipAddr;
+}
 
 const std::string &Client::getUsername() const
 {
-    // TODO: inserir instrução return aqui
     return username;
+}
+void Client::setUsername(const std::string &username)
+{
+    this->username = username;
 }
 
