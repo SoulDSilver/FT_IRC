@@ -11,7 +11,7 @@ class Server
 	int listen_port;
 	const std::string password;
 	int listen_fd;
-	static bool Signal;          
+	static volatile sig_atomic_t Signal;
 	Server();
 	void create_socket();
 	std::vector<struct pollfd> fds;

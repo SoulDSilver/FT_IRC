@@ -5,7 +5,7 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 }
 
 Server::Server(int port, const std::string &password) : listen_port(port),
-	password(password)
+	password(password), listen_fd(-1)
 {
 }
 
@@ -44,13 +44,11 @@ void Server::closeFds()
 	}
 }
 
-bool Server::Signal = false; // the static boolean
+volatile sig_atomic_t Server::Signal = 0;
 void Server::signalHandler(int signum)
 {
 	(void)signum;
-	std::cout << std::endl << "Signal Received!" << std::endl;
-	Server::Signal = true;
-		//-> set the static boolean to true to stop the server
+	Server::Signal = 1;
 }
 
 void Server::removeClients(int fd)
@@ -134,11 +132,12 @@ void Server::addNewClient()
 		std::cout << "accept() failed" << std::endl;
 		return ;
 	}
-	flags = fcntl(this->listen_fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(this->listen_fd, F_SETFL, flags | O_NONBLOCK) ==
+	flags = fcntl(incofd, F_GETFL, 0);
+	if (flags == -1 || fcntl(incofd, F_SETFL, flags | O_NONBLOCK) ==
 		-1)
 	{
 		std::cout << "fcntl() failed" << std::endl;
+		close(incofd);
 		return ;
 	}
 	NewPoll.fd = incofd;     //-> add the client socket to the pollfd
@@ -198,5 +197,6 @@ void Server::run()
 			}
 		}
 	}
+	std::cout << std::endl << "Signal Received!" << std::endl;
 	std::cout << "The Server Closed!" << std::endl;
 }
