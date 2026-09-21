@@ -18,31 +18,25 @@ BLUE = \033[0;34m
 CYAN = \033[0;36m
 
 NAME = ircserv
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -Iincludes
-
-SRCS = \
-	srcs/main.cpp \
-	srcs/Server.cpp \
-	srcs/Client.cpp \
-	srcs/Channel.cpp \
-	srcs/Commands.cpp \
-	srcs/commands_files/Registration.cpp \
-	srcs/commands_files/ChannelCommands.cpp \
-	srcs/commands_files/OperatorCommands.cpp \
-	srcs/commands_files/Messaging.cpp
-
-OBJDIR = obj
+HEADERS = $(addprefix includes/, Channel.hpp Client.hpp Server.hpp \
+			irc.hpp Commands.hpp)
+SRCS =  $(addprefix srcs/, main.cpp Commands.cpp Channel.cpp Client.cpp \
+			Server.cpp commands_files/Registration.cpp \
+			commands_files/ChannelCommands.cpp \
+			commands_files/OperatorCommands.cpp \
+			commands_files/Messaging.cpp )
+OBJDIR = objs
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -Iincludes
+CXX = c++
 
 all: $(NAME)
-
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) $(HEADERS)
 	@printf "$(GREEN)Linking $(NAME)...$(RESET)\n"
-	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	@$(CXX) $(CXXFLAGS) $(OBJS) -o $@
 	@printf "$(GREEN)$(NAME) ready.$(RESET)\n"
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
 	@printf "$(BLUE)Compiling $<$(RESET)\n"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -57,4 +51,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re 
