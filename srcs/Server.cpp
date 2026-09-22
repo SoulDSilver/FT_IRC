@@ -157,7 +157,7 @@ void Server::addNewClient()
 void Server::handleClientData(int fd)
 {
 	char buff[1024];               //-> buffer for the received data
-	memset(buff, 0, sizeof(buff)); //-> clear the buffer
+	std::memset(buff, 0, sizeof(buff)); //-> clear the buffer
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
 	if (bytes <= 0)
 	{ //-> check if the client disconnected
