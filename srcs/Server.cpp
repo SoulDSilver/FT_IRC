@@ -44,6 +44,16 @@ void Server::closeFds()
 	}
 }
 
+int Server::getListenPort() const
+{
+	return (listen_port);
+}
+
+int Server::getListenFd() const
+{
+	return (listen_fd);
+}
+
 volatile sig_atomic_t Server::Signal = 0;
 void Server::signalHandler(int signum)
 {
@@ -105,6 +115,12 @@ void Server::create_socket()
 	fds.push_back(NewP);
 }
 
+void Server::createChannel(const std::string &channelname, Client &client)
+{
+	Channel channel(channelname, this, client);
+	channels[channelname] = channel;
+}
+
 void Server::addNewClient()
 {
 	struct sockaddr_in	cliadd;
@@ -143,8 +159,9 @@ void Server::addNewClient()
 
 void Server::handleClientData(int fd)
 {
-	char buff[1024];                                    
-		//-> buffer for the received data
+	char	buff[1024];
+
+	//-> buffer for the received data
 	std::memset(buff, 0, sizeof(buff));                  //-> clear the buffer
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
 	if (bytes <= 0)
@@ -155,6 +172,15 @@ void Server::handleClientData(int fd)
 	}
 	else
 	{ //-> print the received data
+		// parser parte
+		std::string data(buff);
+		if (data.substr(0, 4) == "JOIN")
+		{
+			if (!channels.count(data.substr(5)))
+				createChannel(data.substr(5), clients[fd]);
+			else
+				channels[data.substr(5)].addClient(clients[fd]);
+		}
 		buff[bytes] = '\0';
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 	}
@@ -181,7 +207,7 @@ void Server::run()
 				else
 				{
 					handleClientData(fds[i].fd);
-						//-> handle data from existing client
+					//-> handle data from existing client
 				}
 			}
 		}
