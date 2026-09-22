@@ -15,7 +15,7 @@ class Server
 	Server();
 	void create_socket();
 	std::vector<struct pollfd> fds;
-    std::vector<Client> clients;
+    std::map<int, Client> clients;
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);

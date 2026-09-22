@@ -61,14 +61,7 @@ void Server::removeClients(int fd)
 			break ;
 		}
 	}
-	for (size_t i = 0; i < this->clients.size(); i++)
-	{
-		if (this->clients[i].getFd() == fd)
-		{
-			this->clients.erase(this->clients.begin() + i);
-			break ;
-		}
-	}
+	clients.erase(fd);
 }
 
 void Server::create_socket()
@@ -98,8 +91,7 @@ void Server::create_socket()
 		throw(std::runtime_error("Error binding socket"));
 	}
 	//
-	if ( fcntl(this->listen_fd, F_SETFL,  O_NONBLOCK) ==
-		-1)
+	if (fcntl(this->listen_fd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		throw(std::runtime_error("Error setting socket to non-blocking"));
 	}
@@ -119,7 +111,6 @@ void Server::addNewClient()
 	struct pollfd		NewPoll;
 	socklen_t			len;
 	int					incofd;
-	int					flags;
 
 	Client cli; //-> create a new client
 	len = sizeof(cliadd);
@@ -130,9 +121,7 @@ void Server::addNewClient()
 		std::cout << "accept() failed" << std::endl;
 		return ;
 	}
-	flags = fcntl(incofd, F_GETFL, 0);
-	if (flags == -1 || fcntl(incofd, F_SETFL, flags | O_NONBLOCK) ==
-		-1)
+	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		std::cout << "fcntl() failed" << std::endl;
 		close(incofd);
@@ -141,27 +130,28 @@ void Server::addNewClient()
 	NewPoll.fd = incofd;     //-> add the client socket to the pollfd
 	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
 	NewPoll.revents = 0;     //-> set the revents to 0
-	cli.setFd(incofd);                          
-		//-> set the client file descriptor
+	cli.setFd(incofd);
+	//-> set the client file descriptor
 	cli.setIpAddr(inet_ntoa((cliadd.sin_addr)));
-		//-> convert the ip address to string and set it
-	clients.push_back(cli);                     
-		//-> add the client to the vector of clients
-	fds.push_back(NewPoll);                     
-		//-> add the client socket to the pollfd
+	//-> convert the ip address to string and set it
+	clients[incofd] = cli;
+	//-> add the client to the map keyed by file descriptor
+	fds.push_back(NewPoll);
+	//-> add the client socket to the pollfd
 	std::cout << GRE << "Client <" << incofd << "> Connected" << WHI << std::endl;
 }
 
 void Server::handleClientData(int fd)
 {
-	char buff[1024];               //-> buffer for the received data
-	std::memset(buff, 0, sizeof(buff)); //-> clear the buffer
+	char buff[1024];                                    
+		//-> buffer for the received data
+	std::memset(buff, 0, sizeof(buff));                  //-> clear the buffer
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
 	if (bytes <= 0)
 	{ //-> check if the client disconnected
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		removeClients(fd); //-> clear the client
-		close(fd);        //-> close the client socket
+		close(fd);         //-> close the client socket
 	}
 	else
 	{ //-> print the received data
@@ -190,7 +180,8 @@ void Server::run()
 				}
 				else
 				{
-					handleClientData(fds[i].fd); //-> handle data from existing client
+					handleClientData(fds[i].fd);
+						//-> handle data from existing client
 				}
 			}
 		}

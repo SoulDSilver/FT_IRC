@@ -1,18 +1,18 @@
 #pragma once
 
 #include "irc.hpp"
-#include "Client.hpp"
-
+#include "Server.hpp"
 
 class Channel
 {
 private:
     std::string name;
+    Server *server;
     std::map<int , Client> clients;
     Channel();
 
 public:
-    Channel(const std::string &name);
+    Channel(const std::string &name, Server *server, Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
     ~Channel();
