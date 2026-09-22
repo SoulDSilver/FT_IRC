@@ -10,10 +10,11 @@ Channel::Channel(const std::string &name, Server *server, Client &client)
     this->name = name;
     this->server = server;
     this->clients[client.getFd()] = client;
+	operators.push_back(client.getUsername());
 }
 
 Channel::Channel(const Channel &other) : name(other.name),
-	clients(other.clients)
+	clients(other.clients), operators(other.operators)
 {
 }
 
