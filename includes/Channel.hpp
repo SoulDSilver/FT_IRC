@@ -1,7 +1,7 @@
 #pragma once
 
 #include "irc.hpp"
-#include "Server.hpp"
+
 
 class Channel
 {
@@ -9,6 +9,7 @@ private:
     std::string name;
     Server *server;
     std::map<int , Client> clients;
+    std::vector<std::string> operators;
     Channel();
 
 public:
