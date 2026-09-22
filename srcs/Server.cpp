@@ -74,7 +74,6 @@ void Server::removeClients(int fd)
 void Server::create_socket()
 {
 	int					yes;
-	int					flags;
 	struct sockaddr_in	addr;
 	struct pollfd		NewP;
 
@@ -99,8 +98,7 @@ void Server::create_socket()
 		throw(std::runtime_error("Error binding socket"));
 	}
 	//
-	flags = fcntl(this->listen_fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(this->listen_fd, F_SETFL, flags | O_NONBLOCK) ==
+	if ( fcntl(this->listen_fd, F_SETFL,  O_NONBLOCK) ==
 		-1)
 	{
 		throw(std::runtime_error("Error setting socket to non-blocking"));

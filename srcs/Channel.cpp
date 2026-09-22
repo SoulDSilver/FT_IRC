@@ -18,6 +18,11 @@ Channel &Channel::operator=(const Channel &other)
 
 Channel::~Channel() {}
 
+const std::map<int, Client> &Channel::getClients() const
+{
+    // TODO: inserir instrução return aqui
+}
+
 void Channel::addClient(const Client &client)
 {
     (void)client;
