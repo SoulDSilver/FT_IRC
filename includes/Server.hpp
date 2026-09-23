@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 
 #include "Client.hpp"
@@ -26,6 +27,8 @@ class Server
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);
+	void welcomeMessage(Client &client);
+	bool isClientInChannel(const string &channelName, int client_fd) const;
 
   public:
 	Server(int port, const string &password);
@@ -40,6 +43,10 @@ class Server
 
 	// geters and setters
  
+	const string &getName() const;
+	const string &getPassword() const;
 	int getListenPort() const;
 	int getListenFd() const;
 };
+
+#endif

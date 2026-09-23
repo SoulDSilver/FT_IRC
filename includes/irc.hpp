@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stdexcept>
+#include <sstream>
 #include <cstring>
 #include <csignal>
 #include <cerrno>

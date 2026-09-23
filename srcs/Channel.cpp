@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Server.hpp"
 
 Channel::Channel(const string &name, Server &server,
 	Client &client) : server(server)
@@ -32,6 +33,11 @@ Channel::~Channel()
 {
 }
 
+const string &Channel::getName() const
+{
+	return (name);
+}
+
 const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
@@ -39,10 +45,23 @@ const map<int, Client> &Channel::getClients() const
 
 void Channel::addClient(const Client &client)
 {
-	clients[client.getFd()] = client;
+	clients.at(client.getFd()) = client;
 }
 
 void Channel::removeClient(const Client &client)
 {
 	clients.erase(client.getFd());
+}
+
+void Channel::broadcastMessage(const string &message, int senderFd) const
+{
+	string sms;
+	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (it->first != senderFd)
+		{
+			sms = ":" + server.getName()+ " :" + clients.at(senderFd).getNick() + "!" + clients.at(senderFd).getUsername() + "@localhost " + message;
+			send(it->first, sms.c_str(), sms.length(), 0);
+		}
+	}
 }
