@@ -24,11 +24,16 @@ Channel &Channel::operator=(const Channel &other)
 	return (*this);
 }
 
+bool Channel::operator==(const Channel &other)
+{
+    return (this->name == other.name);
+}
+
 Channel::~Channel()
 {
 }
 
-const std::map<int, Client> &Channel::getClients() const
+const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
 }

@@ -1,27 +1,28 @@
+#include "irc.hpp"
 #include "Server.hpp"
 
 int	main(int ac, char **av)
 {
 	if (ac != 3)
 	{
-		std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
+		cerr << "Usage: ./ircserv <port> <password>" << endl;
 		return (1);
 	}
-	if (std::atoi(av[1]) <= 0 || std::atoi(av[1]) > 65535)
+	if (atoi(av[1]) <= 0 || atoi(av[1]) > 65535)
 	{
-		std::cerr << "Invalid port number" << std::endl;
+		cerr << "Invalid port number" << endl;
 		return (1);
 	}
-	Server server(std::atoi(av[1]), av[2]);
+	Server server(atoi(av[1]), av[2]);
 	try
 	{
         signal(SIGINT, Server::signalHandler); // (ctrl + c)
 		signal(SIGQUIT, Server::signalHandler); // (ctrl + \)
 		server.run();
 	}
-	catch (const std::exception &e)
+	catch (const exception &e)
 	{
-		std::cerr << "Error: " << e.what() << std::endl;
+		cerr << "Error: " << e.what() << endl;
 		return (-1);
 	}
 	return (0);
