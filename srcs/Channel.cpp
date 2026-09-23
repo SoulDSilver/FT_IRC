@@ -1,15 +1,15 @@
 #include "Channel.hpp"
 
-
-Channel::Channel(const std::string &name, Server &server, Client &client):server(server)
+Channel::Channel(const string &name, Server &server,
+	Client &client) : server(server)
 {
-    this->name = name;
-    this->clients[client.getFd()] = client;
-	operators.push_back(client.getUsername());
+	this->name = name;
+	this->clients[client.getFd()] = client;
+	operators.push_back(client.getFd());
 }
 
-Channel::Channel(const Channel &other) : name(other.name), server(other.server),
-	clients(other.clients), operators(other.operators)
+Channel::Channel(const Channel &other) : name(other.name),
+	server(other.server), clients(other.clients), operators(other.operators)
 {
 }
 
@@ -26,7 +26,7 @@ Channel &Channel::operator=(const Channel &other)
 
 bool Channel::operator==(const Channel &other)
 {
-    return (this->name == other.name);
+	return (this->name == other.name);
 }
 
 Channel::~Channel()

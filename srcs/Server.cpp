@@ -7,10 +7,11 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 Server::Server(int port, const string &password) : listen_port(port),
 	password(password), listen_fd(-1)
 {
+	name = "Broadcast_Server";
 }
 
 Server::Server(const Server &other) : listen_port(other.listen_port),
-	password(other.password), listen_fd(other.listen_fd)
+	password(other.password), listen_fd(other.listen_fd), name(other.name)
 {
 }
 
@@ -21,6 +22,7 @@ Server &Server::operator=(const Server &other)
 		listen_port = other.listen_port;
 		// password = other.password; // password is const, cannot be assigned
 		listen_fd = other.listen_fd;
+		name = other.name;
 	}
 	return (*this);
 }
@@ -118,7 +120,7 @@ void Server::create_socket()
 void Server::createChannel(const string &channelname, Client &client)
 {
 	Channel channel(channelname, *this, client);
-	channels.insert(std::make_pair(channelname, channel));
+	channels.insert(make_pair(channelname, channel));
 }
 
 void Server::addNewClient()
@@ -173,16 +175,18 @@ void Server::handleClientData(int fd)
 	else
 	{ //-> print the received data
 		// parser parte
-		std::string data(buff);
-		// if (data.substr(0, 4) == "JOIN")
-		// {
-		// 	if (!channels.count(data.substr(5)))
-		// 		createChannel(data.substr(5), clients[fd]);
-		// 	else
-		// 		channels[data.substr(5)].addClient(clients[fd]);
-		// }
+		string data(buff);
+		if (data.substr(0, 4) == "JOIN")
+		{
+			if (!channels.count(data.substr(5)))
+				createChannel(data.substr(5), clients[fd]);
+			else
+				channels.at(data.substr(5)).addClient(clients[fd]);
+		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
+		string jj = ":" +name + " 001 " + clients[fd].getNick() + " :Welcome to the IRC Network " + clients[fd].getNick() + "!" + clients[fd].getUsername() + "@"  + " \r\n" ;
+		send(fd, jj.c_str(), jj.length(), 0); //-> echo the data back to the client
 	}
 }
 

@@ -6,10 +6,13 @@ class Client
 {
   private:
 	int fd;
+	string inbuff;
+	string outbuff;	
 	string ipAddr;
+	string nick;
 	string username;
-
-  public:
+	
+public:
 	Client();
 	Client(const Client &other);
 	Client &operator=(const Client &other);
@@ -20,6 +23,8 @@ class Client
     const string &getIpAddr() const;
     void setIpAddr(const string &ipAddr);
 	const string &getUsername() const;
+	string getNick() const;
+	void setNick(const string &nick);
     void setUsername(const string &username);
 };
 

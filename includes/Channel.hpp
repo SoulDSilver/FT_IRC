@@ -10,14 +10,15 @@ class Client;
 class Channel
 {
 private:
-    std::string name;
+    string name;
     Server &server;
-    std::map<int , Client> clients;
-    std::vector<std::string> operators;
-
+    map<int , Client> clients;
+    vector<int> operators;
+    vector<string> settings;
+    vector<string> investedUsers;
 
 public:
-    Channel(const std::string &name, Server &server, Client &client);
+    Channel(const string &name, Server &server, Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
     bool operator==(const Channel &other);

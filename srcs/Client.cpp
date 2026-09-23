@@ -42,6 +42,14 @@ const string &Client::getUsername() const
 {
     return username;
 }
+string Client::getNick() const
+{
+    return nick;
+}
+void Client::setNick(const string &nick)
+{
+    this->nick = nick;
+}
 void Client::setUsername(const string &username)
 {
     this->username = username;
