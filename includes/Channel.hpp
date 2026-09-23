@@ -1,7 +1,8 @@
-#ifndef CHANNEL_HPP
-#define CHANNEL_HPP
+#pragma once
 
+#include "irc.hpp"
 #include "Client.hpp"
+#include "Server.hpp"
 
 class Server;
 class Client;
@@ -27,4 +28,3 @@ public:
     void removeClient(const Client &client);
 };
 
-#endif
