@@ -1,25 +1,31 @@
-#pragma once
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
-#include "irc.hpp"
+#include "Client.hpp"
 
+class Server;
 
 class Channel
 {
 private:
-    std::string name;
+    string name;
     Server *server;
-    std::map<int , Client> clients;
-    std::vector<std::string> operators;
-    Channel();
+    map<int , Client> clients;
+    vector<int> operators;
+    vector<string> settings;
+    vector<string> investedUsers;
 
 public:
-    Channel(const std::string &name, Server *server, Client &client);
+    Channel();
+    Channel(const string &name, Server *server, Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
+    bool operator==(const Channel &other);
     ~Channel();
-    const std::string &getName() const; 
-    const  std::map<int , Client> &getClients() const;
+    const string &getName() const; 
+    const  map<int , Client> &getClients() const;
     void addClient(const Client &client);
     void removeClient(const Client &client);
 };
 
+#endif

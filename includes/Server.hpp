@@ -1,7 +1,8 @@
 #pragma once
 
-#include "irc.hpp"
 
+#include "Client.hpp"
+#include "Channel.hpp"
 
 #define MAXPENDCONN 10
 
@@ -9,25 +10,25 @@ class Server
 {
   private:
 	int listen_port;
-	const std::string password;
+	const string password;
 	int listen_fd;
 	static volatile sig_atomic_t Signal;
 
 	Server();
 	void create_socket();
 
-	std::vector<struct pollfd> fds;
-    std::map<int, Client> clients;
-    std::map<std::string, Channel> channels;
+	vector<struct pollfd> fds;
+    map<int, Client> clients;
+    map<string, Channel> channels;
 
 
-	void createChannel(const std::string &channelName, Client &client);
+	void createChannel(const string &channelName, Client &client);
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);
 
   public:
-	Server(int port, const std::string &password);
+	Server(int port, const string &password);
 	Server(const Server &other);
 	Server &operator=(const Server &other);
 	~Server();

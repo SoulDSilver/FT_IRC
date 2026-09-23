@@ -5,12 +5,12 @@ Channel::Channel() : name("")
 }
 
 
-Channel::Channel(const std::string &name, Server *server, Client &client)
+Channel::Channel(const string &name, Server *server, Client &client)
 {
     this->name = name;
     this->server = server;
     this->clients[client.getFd()] = client;
-	operators.push_back(client.getUsername());
+	operators.push_back(client.getFd());
 }
 
 Channel::Channel(const Channel &other) : name(other.name),
@@ -28,11 +28,16 @@ Channel &Channel::operator=(const Channel &other)
 	return (*this);
 }
 
+bool Channel::operator==(const Channel &other)
+{
+    return (this->name == other.name);
+}
+
 Channel::~Channel()
 {
 }
 
-const std::map<int, Client> &Channel::getClients() const
+const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
 }

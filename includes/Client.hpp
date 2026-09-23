@@ -1,11 +1,14 @@
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
+
 #include "irc.hpp"
 
 class Client
 {
   private:
 	int fd;
-	std::string ipAddr;
-	std::string username;
+	string ipAddr;
+	string username;
 
   public:
 	Client();
@@ -15,8 +18,10 @@ class Client
 
 	int getFd() const;
     void setFd(int fd);
-    const std::string &getIpAddr() const;
-    void setIpAddr(const std::string &ipAddr);
-	const std::string &getUsername() const;
-    void setUsername(const std::string &username);
+    const string &getIpAddr() const;
+    void setIpAddr(const string &ipAddr);
+	const string &getUsername() const;
+    void setUsername(const string &username);
 };
+
+#endif
