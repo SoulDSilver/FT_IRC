@@ -1,20 +1,15 @@
 #include "Channel.hpp"
 
-Channel::Channel() : name("")
+Channel::Channel(const string &name, Server &server,
+	Client &client) : server(server)
 {
-}
-
-
-Channel::Channel(const std::string &name, Server *server, Client &client)
-{
-    this->name = name;
-    this->server = server;
-    this->clients[client.getFd()] = client;
-	operators.push_back(client.getUsername());
+	this->name = name;
+	this->clients[client.getFd()] = client;
+	operators.push_back(client.getFd());
 }
 
 Channel::Channel(const Channel &other) : name(other.name),
-	clients(other.clients), operators(other.operators)
+	server(other.server), clients(other.clients), operators(other.operators)
 {
 }
 
@@ -24,25 +19,36 @@ Channel &Channel::operator=(const Channel &other)
 	{
 		name = other.name;
 		clients = other.clients;
+		operators = other.operators;
 	}
 	return (*this);
+}
+
+bool Channel::operator==(const Channel &other)
+{
+	return (this->name == other.name);
 }
 
 Channel::~Channel()
 {
 }
 
-const std::map<int, Client> &Channel::getClients() const
+const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
 }
 
 void Channel::addClient(const Client &client)
 {
-	clients[client.getFd()] = client;
+	clients.insert(std::make_pair(client.getFd(), client));
 }
 
 void Channel::removeClient(const Client &client)
 {
 	clients.erase(client.getFd());
+}
+
+const std::string &Channel::getName() const
+{
+	return (this->name);
 }

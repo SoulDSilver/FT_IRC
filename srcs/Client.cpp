@@ -29,20 +29,28 @@ void Client::setFd(int fd)
     this->fd = fd;
 }
 
-const std::string &Client::getIpAddr() const
+const string &Client::getIpAddr() const
 {
     return ipAddr;
 }
-void Client::setIpAddr(const std::string &ipAddr)
+void Client::setIpAddr(const string &ipAddr)
 {
     this->ipAddr = ipAddr;
 }
 
-const std::string &Client::getUsername() const
+const string &Client::getUsername() const
 {
     return username;
 }
-void Client::setUsername(const std::string &username)
+string Client::getNick() const
+{
+    return nick;
+}
+void Client::setNick(const string &nick)
+{
+    this->nick = nick;
+}
+void Client::setUsername(const string &username)
 {
     this->username = username;
 }
