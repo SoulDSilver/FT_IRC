@@ -1,4 +1,7 @@
-#include "irc.hpp"
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
+
+#include "allincludes.hpp"
 
 class Client
 {
@@ -20,3 +23,5 @@ class Client
 	const std::string &getUsername() const;
     void setUsername(const std::string &username);
 };
+
+#endif

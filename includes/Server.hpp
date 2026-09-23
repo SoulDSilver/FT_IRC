@@ -1,9 +1,13 @@
-#pragma once
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
-#include "irc.hpp"
-
+#include "allincludes.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
 
 #define MAXPENDCONN 10
+
+class Channel;
 
 class Server
 {
@@ -42,3 +46,5 @@ class Server
 	int getListenPort() const;
 	int getListenFd() const;
 };
+
+#endif

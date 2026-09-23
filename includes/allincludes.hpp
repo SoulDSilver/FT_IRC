@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ALLINCLUDES_HPP
+#define ALLINCLUDES_HPP
 
 #include <cstdlib>
 #include <iostream>
@@ -18,3 +19,5 @@
 #define WHI "\e[0;37m" //-> for white color
 #define GRE "\e[1;32m" //-> for green color
 #define YEL "\e[1;33m" //-> for yellow color
+
+#endif

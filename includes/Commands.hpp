@@ -1,8 +1,10 @@
-#include  "irc.hpp"
+#ifndef COMMANDS_HPP
+#define COMMANDS_HPP
 
+#include "allincludes.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
 
-class Client;
-class Channel;
 
 class Commands
 {
@@ -27,3 +29,5 @@ class Commands
         const std::string& getParameters() const { return parameters; }
         const std::string& getPrefix() const { return prefix; }
 };
+
+#endif

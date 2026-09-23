@@ -1,7 +1,11 @@
-#pragma once
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
-#include "irc.hpp"
+#include "allincludes.hpp"
+#include "Client.hpp"
+#include "Server.hpp"
 
+class Server;
 
 class Channel
 {
@@ -10,9 +14,9 @@ private:
     Server *server;
     std::map<int , Client> clients;
     std::vector<std::string> operators;
-    Channel();
-
+    
 public:
+    Channel();
     Channel(const std::string &name, Server *server, Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
@@ -23,3 +27,4 @@ public:
     void removeClient(const Client &client);
 };
 
+#endif
