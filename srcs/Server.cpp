@@ -5,13 +5,13 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 }
 
 Server::Server(int port, const string &password) : listen_port(port),
-	password(password), listen_fd(-1)
+												   password(password), listen_fd(-1)
 {
 	name = "Broadcast_Server";
 }
 
 Server::Server(const Server &other) : listen_port(other.listen_port),
-	password(other.password), listen_fd(other.listen_fd), name(other.name)
+									  password(other.password), listen_fd(other.listen_fd), name(other.name)
 {
 }
 
@@ -63,24 +63,17 @@ void Server::signalHandler(int signum)
 	Server::Signal = 1;
 }
 
-void Server::removeClients(int fd)
+void Server::removeClients(int fd, size_t index)
 {
-	for (size_t i = 0; i < this->fds.size(); i++)
-	{
-		if (this->fds[i].fd == fd)
-		{
-			this->fds.erase(this->fds.begin() + i);
-			break ;
-		}
-	}
+	this->fds.erase(this->fds.begin() + index);
 	clients.erase(fd);
 }
 
 void Server::create_socket()
 {
-	int					yes;
-	struct sockaddr_in	addr;
-	struct pollfd		NewP;
+	int yes;
+	struct sockaddr_in addr;
+	struct pollfd NewP;
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -93,7 +86,7 @@ void Server::create_socket()
 	//
 	yes = 1;
 	if (setsockopt(this->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes,
-			sizeof(yes)) == -1)
+				   sizeof(yes)) == -1)
 	{
 		throw(runtime_error("faild to set option (SO_REUSEADDR) on socket"));
 	}
@@ -125,10 +118,10 @@ void Server::createChannel(const string &channelname, Client &client)
 
 void Server::addNewClient()
 {
-	struct sockaddr_in	cliadd;
-	struct pollfd		NewPoll;
-	socklen_t			len;
-	int					incofd;
+	struct sockaddr_in cliadd;
+	struct pollfd NewPoll;
+	socklen_t len;
+	int incofd;
 
 	Client cli; //-> create a new client
 	len = sizeof(cliadd);
@@ -137,17 +130,17 @@ void Server::addNewClient()
 	if (incofd == -1)
 	{
 		cout << "accept() failed" << endl;
-		return ;
+		return;
 	}
 	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		cout << "fcntl() failed" << endl;
 		close(incofd);
-		return ;
+		return;
 	}
-	NewPoll.fd = incofd;     //-> add the client socket to the pollfd
+	NewPoll.fd = incofd;	 //-> add the client socket to the pollfd
 	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
-	NewPoll.revents = 0;     //-> set the revents to 0
+	NewPoll.revents = 0;	 //-> set the revents to 0
 	cli.setFd(incofd);
 	//-> set the client file descriptor
 	cli.setIpAddr(inet_ntoa((cliadd.sin_addr)));
@@ -159,18 +152,18 @@ void Server::addNewClient()
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
 
-void Server::handleClientData(int fd)
+void Server::handleClientData(int fd, size_t index)
 {
-	char	buff[1024];
+	char buff[1024];
 
 	//-> buffer for the received data
-	memset(buff, 0, sizeof(buff));                  //-> clear the buffer
+	memset(buff, 0, sizeof(buff));						 //-> clear the buffer
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
 	if (bytes <= 0)
 	{ //-> check if the client disconnected
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
-		removeClients(fd); //-> clear the client
-		close(fd);         //-> close the client socket
+		removeClients(fd, index); //-> clear the client
+		close(fd);				  //-> close the client socket
 	}
 	else
 	{ //-> print the received data
@@ -185,7 +178,7 @@ void Server::handleClientData(int fd)
 		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		string jj = ":" +name + " 001 " + clients[fd].getNick() + " :Welcome to the IRC Network " + clients[fd].getNick() + "!" + clients[fd].getUsername() + "@"  + " \r\n" ;
+		string jj = ":" + name + " 001 " + clients[fd].getNick() + " :Welcome to the IRC Network " + clients[fd].getNick() + "!" + clients[fd].getUsername() + "@" + " \r\n";
 		send(fd, jj.c_str(), jj.length(), 0); //-> echo the data back to the client
 	}
 }
@@ -210,12 +203,13 @@ void Server::run()
 				}
 				else
 				{
-					handleClientData(fds[i].fd);
+					handleClientData(fds[i].fd, i);
 					//-> handle data from existing client
 				}
 			}
 		}
 	}
-	cout << endl << "Signal Received!" << endl;
+	cout << endl
+		 << "Signal Received!" << endl;
 	cout << "The Server Closed!" << endl;
 }

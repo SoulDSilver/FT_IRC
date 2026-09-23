@@ -2,8 +2,6 @@
 
 Client::Client() : fd(-1), ipAddr(""), username("") {}
 
-
-
 Client::Client(const Client &other)
     : fd(other.fd), ipAddr(other.ipAddr), username(other.username) {}
 
