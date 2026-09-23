@@ -1,5 +1,6 @@
-#include  "irc.hpp"
+#pragma once
 
+#include  "irc.hpp"
 
 class Client;
 class Channel;

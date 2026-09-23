@@ -117,8 +117,8 @@ void Server::create_socket()
 
 void Server::createChannel(const std::string &channelname, Client &client)
 {
-	Channel channel(channelname, this, client);
-	channels[channelname] = channel;
+	Channel channel(channelname, *this, client);
+	channels.insert(std::make_pair(channelname, channel));
 }
 
 void Server::addNewClient()
@@ -174,13 +174,13 @@ void Server::handleClientData(int fd)
 	{ //-> print the received data
 		// parser parte
 		std::string data(buff);
-		if (data.substr(0, 4) == "JOIN")
-		{
-			if (!channels.count(data.substr(5)))
-				createChannel(data.substr(5), clients[fd]);
-			else
-				channels[data.substr(5)].addClient(clients[fd]);
-		}
+		// if (data.substr(0, 4) == "JOIN")
+		// {
+		// 	if (!channels.count(data.substr(5)))
+		// 		createChannel(data.substr(5), clients[fd]);
+		// 	else
+		// 		channels[data.substr(5)].addClient(clients[fd]);
+		// }
 		buff[bytes] = '\0';
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 	}

@@ -5,6 +5,9 @@
 
 #define MAXPENDCONN 10
 
+class Client;
+class Channel;
+
 class Server
 {
   private:
@@ -20,7 +23,6 @@ class Server
     std::map<int, Client> clients;
     std::map<std::string, Channel> channels;
 
-
 	void createChannel(const std::string &channelName, Client &client);
     void addNewClient();
     void handleClientData(int client_fd);
@@ -32,12 +34,9 @@ class Server
 	Server &operator=(const Server &other);
 	~Server();
 
-	// importants methods
 	void run();
-    static void signalHandler(int signum); //-> static method to handle signals
-    void closeFds(); //-> method to close all the clients and the server socket
-
-	// geters and setters
+    static void signalHandler(int signum);
+    void closeFds(); 
  
 	int getListenPort() const;
 	int getListenFd() const;

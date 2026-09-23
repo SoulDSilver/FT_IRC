@@ -2,18 +2,20 @@
 
 #include "irc.hpp"
 
+class Server;
+class Client;
 
 class Channel
 {
 private:
     std::string name;
-    Server *server;
+    Server &server;
     std::map<int , Client> clients;
     std::vector<std::string> operators;
-    Channel();
+
 
 public:
-    Channel(const std::string &name, Server *server, Client &client);
+    Channel(const std::string &name, Server &server, Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
     ~Channel();
