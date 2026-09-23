@@ -10,6 +10,7 @@ class Client
 	string inbuff;
 	string outbuff;	
 	string ipAddr;
+	string nick;
 	string username;
 	
 public:
@@ -23,6 +24,8 @@ public:
     const string &getIpAddr() const;
     void setIpAddr(const string &ipAddr);
 	const string &getUsername() const;
+	string getNick() const;
+	void setNick(const string &nick);
     void setUsername(const string &username);
 };
 

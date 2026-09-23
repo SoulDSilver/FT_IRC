@@ -7,7 +7,7 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 Server::Server(int port, const string &password) : listen_port(port),
 	password(password), listen_fd(-1)
 {
-	name = "Broadcast Server";
+	name = "Broadcast_Server";
 }
 
 Server::Server(const Server &other) : listen_port(other.listen_port),
@@ -119,8 +119,8 @@ void Server::create_socket()
 
 void Server::createChannel(const string &channelname, Client &client)
 {
-	Channel channel(channelname, this, client);
-	channels[channelname] = channel;
+	Channel channel(channelname, *this, client);
+	channels.insert(make_pair(channelname, channel));
 }
 
 void Server::addNewClient()
@@ -181,11 +181,12 @@ void Server::handleClientData(int fd)
 			if (!channels.count(data.substr(5)))
 				createChannel(data.substr(5), clients[fd]);
 			else
-				channels[data.substr(5)].addClient(clients[fd]);
+				channels.at(data.substr(5)).addClient(clients[fd]);
 		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		send(fd, ":irc.example.com 001 octa :Welcome to the IRC Network octa!octa@host \r\n", 120, 0); //-> echo the data back to the client
+		string jj = ":" +name + " 001 " + clients[fd].getNick() + " :Welcome to the IRC Network " + clients[fd].getNick() + "!" + clients[fd].getUsername() + "@"  + " \r\n" ;
+		send(fd, jj.c_str(), jj.length(), 0); //-> echo the data back to the client
 	}
 }
 
