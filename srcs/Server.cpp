@@ -46,6 +46,16 @@ void Server::closeFds()
 	}
 }
 
+const string &Server::getName() const
+{
+    return (name);
+}
+
+const string &Server::getPassword() const
+{
+    return (password);
+}
+
 int Server::getListenPort() const
 {
 	return (listen_port);
@@ -74,6 +84,23 @@ void Server::removeClients(int fd)
 		}
 	}
 	clients.erase(fd);
+}
+
+void Server::welcomeMessage(Client &client)
+{
+	string welcomeMsg = ":" + this->getName() + " 001 " + client.getNick() + " :Welcome to the IRC server, " + client.getNick() + "!\r\n";
+	send(client.getFd(), welcomeMsg.c_str(), welcomeMsg.length(), 0);
+}
+
+bool Server::isClientInChannel(const string &channelName, int client_fd) const
+{
+	if(channels.count(channelName) == 1)
+	{
+		const Channel &channel = channels.at(channelName);
+		const map<int, Client> &channelClients = channel.getClients();
+		return channelClients.find(client_fd) != channelClients.end();
+	}
+	return false;
 }
 
 void Server::create_socket()
@@ -121,6 +148,7 @@ void Server::createChannel(const string &channelname, Client &client)
 {
 	Channel channel(channelname, *this, client);
 	channels.insert(make_pair(channelname, channel));
+	cout << GRE << "Channel <" << channelname << "> Created by Client <" << client.getNick() << ">" << WHI << endl;
 }
 
 void Server::addNewClient()
@@ -129,6 +157,7 @@ void Server::addNewClient()
 	struct pollfd		NewPoll;
 	socklen_t			len;
 	int					incofd;
+	string				jj;
 
 	Client cli; //-> create a new client
 	len = sizeof(cliadd);
@@ -155,6 +184,12 @@ void Server::addNewClient()
 	clients[incofd] = cli;
 	//-> add the client to the map keyed by file descriptor
 	fds.push_back(NewPoll);
+	std::ostringstream guestName;
+	guestName << "Guest" << incofd;
+
+	clients.at(incofd).setUsername(guestName.str());
+	clients.at(incofd).setNick(guestName.str());
+	welcomeMessage(clients.at(incofd));
 	//-> add the client socket to the pollfd
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
@@ -178,15 +213,36 @@ void Server::handleClientData(int fd)
 		string data(buff);
 		if (data.substr(0, 4) == "JOIN")
 		{
-			if (!channels.count(data.substr(5)))
-				createChannel(data.substr(5), clients[fd]);
-			else
-				channels.at(data.substr(5)).addClient(clients[fd]);
+			string channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			if (channels.count(channelName) == 0)
+				createChannel(channelName, clients.at(fd));
+			else if(channels.count(channelName) == 1)
+			{
+				channels.at(channelName).addClient(clients.at(fd));
+				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
+			}
 		}
+		if(data.substr(0, 7) == "PRIVMSG")
+		{
+			size_t pos = data.find(" ");
+			if (pos != string::npos)
+			{
+				string target = data.substr(8, pos - 8);
+			
+
+				string message = data.substr(pos + 1);
+				if (channels.count(target) == 1)
+				{
+					if(isClientInChannel(target, fd))
+						channels.at(target).broadcastMessage(message, fd);
+				}
+			}
+		}
+		
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		string jj = ":" +name + " 001 " + clients[fd].getNick() + " :Welcome to the IRC Network " + clients[fd].getNick() + "!" + clients[fd].getUsername() + "@"  + " \r\n" ;
-		send(fd, jj.c_str(), jj.length(), 0); //-> echo the data back to the client
 	}
 }
 

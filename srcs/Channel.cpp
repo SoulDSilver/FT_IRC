@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Server.hpp"
 
 Channel::Channel(const string &name, Server &server,
 	Client &client) : server(server)
@@ -19,7 +20,6 @@ Channel &Channel::operator=(const Channel &other)
 	{
 		name = other.name;
 		clients = other.clients;
-		operators = other.operators;
 	}
 	return (*this);
 }
@@ -33,6 +33,11 @@ Channel::~Channel()
 {
 }
 
+const string &Channel::getName() const
+{
+	return (name);
+}
+
 const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
@@ -40,7 +45,10 @@ const map<int, Client> &Channel::getClients() const
 
 void Channel::addClient(const Client &client)
 {
-	clients.insert(std::make_pair(client.getFd(), client));
+	//clients.at(client.getFd()) = client;
+
+	clients.insert(make_pair(client.getFd(), client));
+
 }
 
 void Channel::removeClient(const Client &client)
@@ -48,7 +56,16 @@ void Channel::removeClient(const Client &client)
 	clients.erase(client.getFd());
 }
 
-const std::string &Channel::getName() const
+void Channel::broadcastMessage(const string &message, int senderFd) const
 {
-	return (this->name);
+	string sms;
+	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		cout << it->first << " " << senderFd << " testes" << endl;
+		if (it->first != senderFd)
+		{
+			sms = ":" + server.getName()+ " :" + clients.at(senderFd).getNick() + "!" + clients.at(senderFd).getUsername() + "@localhost " + message;
+			send(it->first, sms.c_str(), sms.length(), 0);
+		}
+	}
 }

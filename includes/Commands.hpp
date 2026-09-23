@@ -32,5 +32,3 @@ class Commands
         const string& getParameters() const { return parameters; }
         const string& getPrefix() const { return prefix; }
 };
-
-#endif

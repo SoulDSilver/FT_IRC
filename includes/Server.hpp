@@ -1,14 +1,11 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "irc.hpp"
+
 #include "Client.hpp"
 #include "Channel.hpp"
 
 #define MAXPENDCONN 10
-
-class Client;
-class Channel;
 
 class Server
 {
@@ -25,10 +22,13 @@ class Server
     map<int, Client> clients;
     map<string, Channel> channels;
 
-	void createChannel(const std::string &channelName, Client &client);
+
+	void createChannel(const string &channelName, Client &client);
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);
+	void welcomeMessage(Client &client);
+	bool isClientInChannel(const string &channelName, int client_fd) const;
 
   public:
 	Server(int port, const string &password);
@@ -36,10 +36,15 @@ class Server
 	Server &operator=(const Server &other);
 	~Server();
 
+	// importants methods
 	void run();
-    static void signalHandler(int signum);
-    void closeFds(); 
+    static void signalHandler(int signum); //-> static method to handle signals
+    void closeFds(); //-> method to close all the clients and the server socket
+
+	// geters and setters
  
+	const string &getName() const;
+	const string &getPassword() const;
 	int getListenPort() const;
 	int getListenFd() const;
 };
