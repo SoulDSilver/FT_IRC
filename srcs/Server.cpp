@@ -94,10 +94,9 @@ void Server::welcomeMessage(Client &client)
 
 bool Server::isClientInChannel(const string &channelName, int client_fd) const
 {
-	map<string, Channel>::const_iterator it = channels.find(channelName);
-	if (it != channels.end())
+	if(channels.count(channelName) == 1)
 	{
-		const Channel &channel = it->second;
+		const Channel &channel = channels.at(channelName);
 		const map<int, Client> &channelClients = channel.getClients();
 		return channelClients.find(client_fd) != channelClients.end();
 	}
@@ -214,16 +213,34 @@ void Server::handleClientData(int fd)
 		string data(buff);
 		if (data.substr(0, 4) == "JOIN")
 		{
-			if (!channels.count(data.substr(5)))
-				createChannel(data.substr(5), clients.at(fd));
-			else
+			string channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			if (channels.count(channelName) == 0)
+				createChannel(channelName, clients.at(fd));
+			else if(channels.count(channelName) == 1)
 			{
-				channels.at(data.substr(5)).addClient(clients.at(fd));
-				cout << GRE << "Client <" << fd << "> Joined Channel <" << data.substr(5) << ">" << WHI << endl;
+				channels.at(channelName).addClient(clients.at(fd));
+				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
 			}
 		}
-		if(isClientInChannel(data.substr(5), fd))
-			channels.at(data.substr(5)).broadcastMessage(data, fd);
+		if(data.substr(0, 7) == "PRIVMSG")
+		{
+			size_t pos = data.find(" ");
+			if (pos != string::npos)
+			{
+				string target = data.substr(8, pos - 8);
+			
+
+				string message = data.substr(pos + 1);
+				if (channels.count(target) == 1)
+				{
+					if(isClientInChannel(target, fd))
+						channels.at(target).broadcastMessage(message, fd);
+				}
+			}
+		}
+		
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 	}

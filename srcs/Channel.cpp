@@ -45,7 +45,10 @@ const map<int, Client> &Channel::getClients() const
 
 void Channel::addClient(const Client &client)
 {
-	clients.at(client.getFd()) = client;
+	//clients.at(client.getFd()) = client;
+
+	clients.insert(make_pair(client.getFd(), client));
+
 }
 
 void Channel::removeClient(const Client &client)
@@ -58,6 +61,7 @@ void Channel::broadcastMessage(const string &message, int senderFd) const
 	string sms;
 	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
+		cout << it->first << " " << senderFd << " testes" << endl;
 		if (it->first != senderFd)
 		{
 			sms = ":" + server.getName()+ " :" + clients.at(senderFd).getNick() + "!" + clients.at(senderFd).getUsername() + "@localhost " + message;

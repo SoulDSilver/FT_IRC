@@ -13,6 +13,7 @@
 #include <cerrno>
 #include <fcntl.h>
 #include <poll.h>
+#include <algorithm>
 #include <unistd.h>
 #include <stdexcept>
 #include <sys/socket.h>
