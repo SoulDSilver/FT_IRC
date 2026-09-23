@@ -13,7 +13,7 @@ class Server
 	const string password;
 	int listen_fd;
 	static volatile sig_atomic_t Signal;
-
+	string name;
 	Server();
 	void create_socket();
 

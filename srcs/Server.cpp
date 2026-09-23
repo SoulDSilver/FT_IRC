@@ -7,10 +7,11 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 Server::Server(int port, const string &password) : listen_port(port),
 	password(password), listen_fd(-1)
 {
+	name = "Broadcast Server";
 }
 
 Server::Server(const Server &other) : listen_port(other.listen_port),
-	password(other.password), listen_fd(other.listen_fd)
+	password(other.password), listen_fd(other.listen_fd), name(other.name)
 {
 }
 
@@ -21,6 +22,7 @@ Server &Server::operator=(const Server &other)
 		listen_port = other.listen_port;
 		// password = other.password; // password is const, cannot be assigned
 		listen_fd = other.listen_fd;
+		name = other.name;
 	}
 	return (*this);
 }
@@ -183,6 +185,7 @@ void Server::handleClientData(int fd)
 		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
+		send(fd, ":irc.example.com 001 octa :Welcome to the IRC Network octa!octa@host \r\n", 120, 0); //-> echo the data back to the client
 	}
 }
 

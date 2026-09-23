@@ -7,10 +7,12 @@ class Client
 {
   private:
 	int fd;
+	string inbuff;
+	string outbuff;	
 	string ipAddr;
 	string username;
-
-  public:
+	
+public:
 	Client();
 	Client(const Client &other);
 	Client &operator=(const Client &other);
