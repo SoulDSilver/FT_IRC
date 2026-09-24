@@ -96,11 +96,16 @@ bool Server::isClientInChannel(const string &channelName, int client_fd) const
 {
 	if (channels.count(channelName) == 1)
 	{
-		const Channel &channel = channels.at(channelName);
-		const map<int, Client> &channelClients = channel.getClients();
+		const map<int, Client> &channelClients = channels.at(channelName).getClients();
 		return channelClients.find(client_fd) != channelClients.end();
 	}
 	return false;
+}
+
+void Server::removeChannel(const string &channelname)
+{
+	channels.erase(channelname);
+	cout << channelname << " have been erase!" << endl;
 }
 
 void Server::create_socket()
@@ -222,6 +227,21 @@ void Server::handleClientData(int fd)
 			{
 				channels.at(channelName).addClient(clients.at(fd));
 				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
+			}
+		}
+		else if (data.substr(0, 4) == "PART")
+		{
+			string channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			if (channels.count(channelName) == 0)
+				createChannel(channelName, clients.at(fd));
+			else if (channels.count(channelName) == 1)
+			{
+				channels.at(channelName).removeClient(clients.at(fd));
+				cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
+				if(channels.at(channelName).have_any_client())
+					removeChannel(channelName);
 			}
 		}
 		if (data.substr(0, 7) == "PRIVMSG")
