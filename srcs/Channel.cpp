@@ -6,11 +6,12 @@ Channel::Channel(const string &name, Server &server,
 {
 	this->name = name;
 	this->clients.insert(make_pair(client.getFd(), client));
-	operators.push_back(client.getFd());
+	this->operators.insert(make_pair(client.getFd(), client));
 }
 
-Channel::Channel(const Channel &other) : name(other.name), server(other.server),
-										 clients(other.clients), operators(other.operators)
+Channel::Channel(const Channel &other)
+	: name(other.name), server(other.server),
+	  clients(other.clients), operators(other.operators)
 {
 }
 
@@ -43,17 +44,26 @@ const map<int, Client> &Channel::getClients() const
 	return (clients);
 }
 
+bool Channel::have_any_client() const
+{
+    return clients.size() == 0;
+}
+
 void Channel::addClient(const Client &client)
 {
-	cout << client;
-	// clients.at(client.getFd()) = client;
 	clients.insert(make_pair(client.getFd(), client));
-	cout << client;
 }
 
 void Channel::removeClient(const Client &client)
 {
 	clients.erase(client.getFd());
+	if (isOperator(client.getFd()))
+		removeOperator(client);
+}
+
+bool Channel::isOperator(int fd) const
+{
+	return operators.count(fd) == 1;
 }
 
 void Channel::listclients() const
@@ -64,6 +74,16 @@ void Channel::listclients() const
 		cout << "No clients in the channel." << endl;
 }
 
+void Channel::addOperator(const Client &client)
+{
+	operators.insert(make_pair(client.getFd(), client));
+}
+
+void Channel::removeOperator(const Client &client)
+{
+	operators.erase(client.getFd());
+}
+
 void Channel::broadcastMessage(const string &message, int senderFd) const
 {
 	string sms;
@@ -72,7 +92,6 @@ void Channel::broadcastMessage(const string &message, int senderFd) const
 		return;
 	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		cout << it->first << " " << senderFd << " testes" << endl;
 		if (it->first != senderFd)
 		{
 			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@localhost PRIVMSG " + this->name + " :" + message + "\r\n";
