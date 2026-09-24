@@ -222,10 +222,14 @@ void Server::handleClientData(int fd)
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
 			if (channels.count(channelName) == 0)
+			{
 				createChannel(channelName, clients.at(fd));
+				channels.at(channelName).sendJoinMessages(clients.at(fd));
+			}
 			else if (channels.count(channelName) == 1)
 			{
 				channels.at(channelName).addClient(clients.at(fd));
+				channels.at(channelName).sendJoinMessages(clients.at(fd));
 				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
 			}
 		}
@@ -234,15 +238,23 @@ void Server::handleClientData(int fd)
 			string channelName = data.substr(5);
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
-			if (channels.count(channelName) == 0)
-				createChannel(channelName, clients.at(fd));
-			else if (channels.count(channelName) == 1)
+			size_t reasonPosition = channelName.find(" :");
+			string reason;
+			if (reasonPosition != string::npos)
 			{
+				reason = channelName.substr(reasonPosition + 2);
+				channelName = channelName.substr(0, reasonPosition);
+			}
+			if (channels.count(channelName) == 1 && isClientInChannel(channelName, fd))
+			{
+				channels.at(channelName).sendPartMessage(clients.at(fd), reason);
 				channels.at(channelName).removeClient(clients.at(fd));
+
 				cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
-				if(channels.at(channelName).have_any_client())
+				if (channels.at(channelName).have_any_client())
 					removeChannel(channelName);
 			}
+
 		}
 		if (data.substr(0, 7) == "PRIVMSG")
 		{
