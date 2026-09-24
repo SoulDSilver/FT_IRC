@@ -12,7 +12,7 @@ private:
     string password;
     Server &server;
     map<int, Client> clients;
-    vector<int> operators;
+    map<int, Client> operators;
     vector<string> settings;
     vector<string> invitedUsers;
 
@@ -24,12 +24,14 @@ public:
     ~Channel();
     const string &getName() const;
     const map<int, Client> &getClients() const;
+
+    bool  have_any_client() const;
     void addClient(const Client &client);
     void removeClient(const Client &client);
 
     void listclients() const;
-    void addOperator(int fd);
-    void removeOperator(int fd);
+    void addOperator(const Client &client);
+    void removeOperator(const Client &client);
     bool isOperator(int fd) const;
     void addSetting(const string &setting);
     void removeSetting(const string &setting);
