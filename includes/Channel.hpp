@@ -23,7 +23,11 @@ public:
     bool operator==(const Channel &other);
     ~Channel();
     const string &getName() const;
+    const string &getPassword() const;
     const map<int, Client> &getClients() const;
+    const map<int, Client> &getOperators() const;
+    const vector<string> &getSettings() const;
+    const vector<string> &getInvitedUsers() const;
 
     bool  have_any_client() const;
     void addClient(const Client &client);
@@ -38,6 +42,8 @@ public:
     void addInvitedUser(const string &username);
     void removeInvitedUser(const string &username);
     void setPassword(const string &password);
+    void sendJoinMessages(const Client &client) const;
+    void sendPartMessage(const Client &client, const string &reason) const;
     void broadcastMessage(const string &message, int senderFd) const;
 };
 
