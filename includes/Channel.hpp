@@ -5,29 +5,29 @@
 
 class Server;
 
-
 class Channel
 {
 private:
     string name;
     string password;
     Server &server;
-    map<int , Client> clients;
+    map<int, Client> clients;
     vector<int> operators;
     vector<string> settings;
     vector<string> invitedUsers;
 
 public:
-    Channel(const string &name, Server &server, Client &client);
+    Channel(const string &name, Server &server, const Client &client);
     Channel(const Channel &other);
     Channel &operator=(const Channel &other);
     bool operator==(const Channel &other);
     ~Channel();
-    const string &getName() const; 
-    const  map<int , Client> &getClients() const;
+    const string &getName() const;
+    const map<int, Client> &getClients() const;
     void addClient(const Client &client);
     void removeClient(const Client &client);
 
+    void listclients() const;
     void addOperator(int fd);
     void removeOperator(int fd);
     bool isOperator(int fd) const;
@@ -37,7 +37,6 @@ public:
     void removeInvitedUser(const string &username);
     void setPassword(const string &password);
     void broadcastMessage(const string &message, int senderFd) const;
-
 };
 
 #endif
