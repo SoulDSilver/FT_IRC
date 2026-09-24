@@ -39,14 +39,34 @@ const string &Channel::getName() const
 	return (name);
 }
 
+const string &Channel::getPassword() const
+{
+	return (password);
+}
+
 const map<int, Client> &Channel::getClients() const
 {
 	return (clients);
 }
 
+const map<int, Client> &Channel::getOperators() const
+{
+	return (operators);
+}
+
+const vector<string> &Channel::getSettings() const
+{
+	return (settings);
+}
+
+const vector<string> &Channel::getInvitedUsers() const
+{
+	return (invitedUsers);
+}
+
 bool Channel::have_any_client() const
 {
-    return clients.size() == 0;
+	return clients.empty();
 }
 
 void Channel::addClient(const Client &client)
@@ -82,6 +102,76 @@ void Channel::addOperator(const Client &client)
 void Channel::removeOperator(const Client &client)
 {
 	operators.erase(client.getFd());
+}
+
+void Channel::addSetting(const string &setting)
+{
+	if (find(settings.begin(), settings.end(), setting) == settings.end())
+		settings.push_back(setting);
+}
+
+void Channel::removeSetting(const string &setting)
+{
+	vector<string>::iterator it = find(settings.begin(), settings.end(), setting);
+	if (it != settings.end())
+		settings.erase(it);
+}
+
+void Channel::addInvitedUser(const string &username)
+{
+	if (find(invitedUsers.begin(), invitedUsers.end(), username) == invitedUsers.end())
+		invitedUsers.push_back(username);
+}
+
+void Channel::removeInvitedUser(const string &username)
+{
+	vector<string>::iterator it = find(invitedUsers.begin(), invitedUsers.end(), username);
+	if (it != invitedUsers.end())
+		invitedUsers.erase(it);
+}
+
+void Channel::setPassword(const string &password)
+{
+	this->password = password;
+}
+
+void Channel::sendJoinMessages(const Client &client) const
+{
+	string host = client.getIpAddr();
+	if (host.empty())
+		host = "host";
+	string prefix = ":" + client.getNick() + "!" + client.getUsername() + "@" + host;
+	string names;
+
+	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (!names.empty())
+			names += " ";
+		if (isOperator(it->first))
+			names += "@";
+		names += it->second.getNick();
+	}
+
+	string messages = prefix + " JOIN :" + name + "\r\n";
+	messages += ":" + server.getName() + " 331 " + client.getNick() + " " + name + " :No topic is set\r\n";
+	messages += ":" + server.getName() + " 353 " + client.getNick() + " = " + name + " :" + names + "\r\n";
+	messages += ":" + server.getName() + " 366 " + client.getNick() + " " + name + " :End of /NAMES list\r\n";
+	send(client.getFd(), messages.c_str(), messages.length(), 0);
+}
+
+void Channel::sendPartMessage(const Client &client, const string &reason) const
+{
+	string host = client.getIpAddr();
+	if (host.empty())
+		host = "host";
+	string message = ":" + client.getNick() + "!" + client.getUsername() + "@" + host;
+	message += " PART " + name;
+	if (!reason.empty())
+		message += " :" + reason;
+	message += "\r\n";
+
+	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+		send(it->first, message.c_str(), message.length(), 0);
 }
 
 void Channel::broadcastMessage(const string &message, int senderFd) const
