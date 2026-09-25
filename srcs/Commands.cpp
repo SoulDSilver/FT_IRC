@@ -1,17 +1,17 @@
 #include "Commands.hpp"
 
-Commands::Commands() : command(""), parameters(""), prefix("") {}
+Commands::Commands() : Command(""), Parameters(""), Prefix("") {}
 
 Commands::Commands(const Commands &other)
-    : command(other.command), parameters(other.parameters), prefix(other.prefix) {}
+    : Command(other.Command), Parameters(other.Parameters), Prefix(other.Prefix) {}
 
 Commands &Commands::operator=(const Commands &other)
 {
     if (this != &other)
     {
-        command = other.command;
-        parameters = other.parameters;
-        prefix = other.prefix;
+        Command = other.Command;
+        Parameters = other.Parameters;
+        Prefix = other.Prefix;
     }
     return *this;
 }

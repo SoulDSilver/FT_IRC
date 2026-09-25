@@ -5,12 +5,12 @@
 class Client
 {
   private:
-	int fd;
-	string inbuff;
-	string outbuff;	
-	string ipAddr;
-	string nick;
-	string username;
+	int Fd;
+	string Inbuff;
+	string Outbuff;
+	string IpAddr;
+	string Nick;
+	string Username;
 	
 public:
 	Client();

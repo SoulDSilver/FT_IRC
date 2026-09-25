@@ -10,14 +10,14 @@ class Channel;
 class Commands
 {
     private:
-        string command;
-        string parameters;
-        string prefix;
+        string Command;
+        string Parameters;
+        string Prefix;
 
     public:
         Commands();
         Commands(const string& command, const string& parameters, const string& prefix)
-            : command(command), parameters(parameters), prefix(prefix) {}
+            : Command(command), Parameters(parameters), Prefix(prefix) {}
         Commands(const Commands& other);
         Commands& operator=(const Commands& other);
         ~Commands();
@@ -28,7 +28,7 @@ class Commands
         void PART(const Channel& channel, const Client& client);
         void PRIVMSG(const Client& sender, const Client& target, const string& message);
         void KICK(const Channel& channel, const Client& client, const string& reason);
-        const string& getCommand() const { return command; }
-        const string& getParameters() const { return parameters; }
-        const string& getPrefix() const { return prefix; }
+        const string& getCommand() const { return Command; }
+        const string& getParameters() const { return Parameters; }
+        const string& getPrefix() const { return Prefix; }
 };

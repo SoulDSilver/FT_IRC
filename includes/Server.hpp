@@ -12,17 +12,17 @@ class Channel;
 class Server
 {
   private:
-	int listen_port;
-	const string password;
-	int listen_fd;
+	int Listen_port;
+	const string Password;
+	int Listen_fd;
 	static volatile sig_atomic_t Signal;
-	string name;
+	string Name;
 	Server();
 	void create_socket();
 
-	vector<struct pollfd> fds;
-    map<int, Client> clients;
-    map<string, Channel> channels;
+	vector<struct pollfd> Fds;
+    map<int, Client> Clients;
+    map<string, Channel> Channels;
 
 	void createChannel(const std::string &channelName, Client &client);
     void addNewClient();

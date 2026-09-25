@@ -10,12 +10,12 @@ class Client;
 class Channel
 {
 private:
-    string name;
-    Server &server;
-    map<int , Client> clients;
-    vector<int> operators;
-    vector<string> settings;
-    vector<string> investedUsers;
+    string Name;
+    Server &ServerRef;
+    map<int , Client> Clients;
+    vector<int> Operators;
+    vector<string> Settings;
+    vector<string> InvestedUsers;
 
 public:
     Channel(const string &name, Server &server, Client &client);

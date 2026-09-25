@@ -1,17 +1,17 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), ipAddr(""), username("") {}
+Client::Client() : Fd(-1), IpAddr(""), Username("") {}
 
 Client::Client(const Client &other)
-    : fd(other.fd), ipAddr(other.ipAddr), username(other.username) {}
+    : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username) {}
 
 Client &Client::operator=(const Client &other)
 {
     if (this != &other)
     {
-        fd = other.fd;
-        ipAddr = other.ipAddr;
-        username = other.username;
+        Fd = other.Fd;
+        IpAddr = other.IpAddr;
+        Username = other.Username;
     }
     return *this;
 }
@@ -20,36 +20,36 @@ Client::~Client() {}
 
 int Client::getFd() const
 {
-    return fd;
+    return Fd;
 }
 void Client::setFd(int fd)
 {
-    this->fd = fd;
+    this->Fd = fd;
 }
 
 const string &Client::getIpAddr() const
 {
-    return ipAddr;
+    return IpAddr;
 }
 void Client::setIpAddr(const string &ipAddr)
 {
-    this->ipAddr = ipAddr;
+    this->IpAddr = ipAddr;
 }
 
 const string &Client::getUsername() const
 {
-    return username;
+    return Username;
 }
 string Client::getNick() const
 {
-    return nick;
+    return Nick;
 }
 void Client::setNick(const string &nick)
 {
-    this->nick = nick;
+    this->Nick = nick;
 }
 void Client::setUsername(const string &username)
 {
-    this->username = username;
+    this->Username = username;
 }
 
