@@ -17,17 +17,19 @@ class Server
 	string name;
 	Server();
 	void create_socket();
-
+	
 	vector<struct pollfd> fds;
     map<int, Client> clients;
     map<string, Channel> channels;
-
+	
+	void closeFds(); //-> method to close all the clients and the server socket
 
 	void createChannel(const string &channelName, Client &client);
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
+	void pongmessage(int fd,const vector<string> &token);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 
 	void removeChannel(const string &channelname);
@@ -41,7 +43,6 @@ class Server
 	// importants methods
 	void run();
     static void signalHandler(int signum); //-> static method to handle signals
-    void closeFds(); //-> method to close all the clients and the server socket
 
 	// geters and setters
  

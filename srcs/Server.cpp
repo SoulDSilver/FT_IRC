@@ -88,18 +88,32 @@ void Server::removeClients(int fd)
 
 void Server::welcomeMessage(Client &client)
 {
-	string welcomeMsg = ":" + this->getName() + " 001 " + client.getNick() + " :Welcome to the IRC server, " + client.getNick() + "!\r\n";
+	string welcomeMsg;
+
+	welcomeMsg = ":" + this->getName() + " 001 " + client.getNick() + " :Welcome to the IRC server, " + client.getNick() + "!\r\n";
 	send(client.getFd(), welcomeMsg.c_str(), welcomeMsg.length(), 0);
+}
+
+void Server::pongmessage(int fd, const vector<string> &token)
+{
+	string retorno;
+
+	if (token.size() == 2 && token[0] == "PING")
+	{
+		retorno = "PONG " + token[1] + "\r\n";
+		send(fd, retorno.c_str(), retorno.size(), 0);
+	}
 }
 
 bool Server::isClientInChannel(const string &channelName, int client_fd) const
 {
 	if (channels.count(channelName) == 1)
 	{
-		const map<int, Client> &channelClients = channels.at(channelName).getClients();
-		return channelClients.find(client_fd) != channelClients.end();
+		const map<int,
+				  Client> &channelClients = channels.at(channelName).getClients();
+		return (channelClients.find(client_fd) != channelClients.end());
 	}
-	return false;
+	return (false);
 }
 
 void Server::removeChannel(const string &channelname)
@@ -191,7 +205,6 @@ void Server::addNewClient()
 	fds.push_back(NewPoll);
 	std::ostringstream guestName;
 	guestName << "Guest" << incofd;
-
 	clients.at(incofd).setUsername(guestName.str());
 	clients.at(incofd).setNick(guestName.str());
 	welcomeMessage(clients.at(incofd));
@@ -202,6 +215,13 @@ void Server::addNewClient()
 void Server::handleClientData(int fd)
 {
 	char buff[1024];
+	string channelName;
+	size_t reasonPosition;
+	string reason;
+	size_t pos;
+	string target;
+	string message;
+	string serverName;
 
 	//-> buffer for the received data
 	memset(buff, 0, sizeof(buff));						 //-> clear the buffer
@@ -216,11 +236,32 @@ void Server::handleClientData(int fd)
 	{ //-> print the received data
 		// parser parte
 		string data(buff);
+		/*meu minni parser*/
+		vector<string> tokens;
+		if (data.compare(0, 4, "PING") == 0)
+		{
+			serverName = data.substr(4);
+			serverName.erase(remove(serverName.begin(), serverName.end(), '\r'),
+							 serverName.end());
+			serverName.erase(remove(serverName.begin(), serverName.end(), '\n'),
+							 serverName.end());
+			if (!serverName.empty())
+			{
+				tokens.push_back("PING");
+				tokens.push_back(serverName);
+				pongmessage(fd, tokens);
+			}
+		}
+		/*================*/
 		if (data.substr(0, 4) == "JOIN")
 		{
-			string channelName = data.substr(5);
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(),
+									 '\r'),
+							  channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(),
+									 '\n'),
+							  channelName.end());
 			if (channels.count(channelName) == 0)
 			{
 				createChannel(channelName, clients.at(fd));
@@ -235,11 +276,14 @@ void Server::handleClientData(int fd)
 		}
 		else if (data.substr(0, 4) == "PART")
 		{
-			string channelName = data.substr(5);
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
-			size_t reasonPosition = channelName.find(" :");
-			string reason;
+			channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(),
+									 '\r'),
+							  channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(),
+									 '\n'),
+							  channelName.end());
+			reasonPosition = channelName.find(" :");
 			if (reasonPosition != string::npos)
 			{
 				reason = channelName.substr(reasonPosition + 2);
@@ -249,23 +293,23 @@ void Server::handleClientData(int fd)
 			{
 				channels.at(channelName).sendPartMessage(clients.at(fd), reason);
 				channels.at(channelName).removeClient(clients.at(fd));
-
 				cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
 				if (channels.at(channelName).have_any_client())
 					removeChannel(channelName);
 			}
-
 		}
 		if (data.substr(0, 7) == "PRIVMSG")
 		{
-			size_t pos = data.find(" ");
+			pos = data.find(" ");
 			if (pos != string::npos)
 			{
-				string target = data.substr(pos + 1, data.find(" ", pos + 1) - pos - 1);
+				target = data.substr(pos + 1, data.find(" ", pos + 1) - pos - 1);
 				cout << GRE << "target" << target << WHI << endl;
-				string message = data.substr(data.find(":", pos) + 1);
-				message.erase(remove(message.begin(), message.end(), '\r'), message.end());
-				message.erase(remove(message.begin(), message.end(), '\n'), message.end());
+				message = data.substr(data.find(":", pos) + 1);
+				message.erase(remove(message.begin(), message.end(), '\r'),
+							  message.end());
+				message.erase(remove(message.begin(), message.end(), '\n'),
+							  message.end());
 				if (channels.count(target) == 1)
 				{
 					if (isClientInChannel(target, fd))
@@ -273,7 +317,6 @@ void Server::handleClientData(int fd)
 				}
 			}
 		}
-
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 	}
