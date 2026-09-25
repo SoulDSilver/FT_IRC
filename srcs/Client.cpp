@@ -53,3 +53,26 @@ void Client::setUsername(const string &username)
     this->Username = username;
 }
 
+void Client::appendInput(const string &data)
+{
+    this->Inbuff += data;
+}
+
+const string &Client::getInbuff() const
+{
+    return (this->Inbuff);
+}
+
+bool Client::extractLine(string &line)
+{
+    size_t end = this->Inbuff.find('\n');
+    if (end == string::npos)
+        return (false);
+
+    line = this->Inbuff.substr(0, end);
+    if (!line.empty() && line[line.size() - 1] == '\r')
+        line.erase(line.size() - 1);
+    this->Inbuff.erase(0, end + 1);
+    return (true);
+}
+

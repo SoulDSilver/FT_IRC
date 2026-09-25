@@ -26,5 +26,8 @@ public:
 	string getNick() const;
 	void setNick(const string &nick);
     void setUsername(const string &username);
+    void appendInput(const string &data);
+    const string &getInbuff() const;
+    bool extractLine(string &line);
 };
 
