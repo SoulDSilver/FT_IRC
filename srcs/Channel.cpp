@@ -64,6 +64,11 @@ const vector<string> &Channel::getInvitedUsers() const
 	return (invitedUsers);
 }
 
+void Channel::setPassword(const string &password)
+{
+	this->password = password;
+}
+
 bool Channel::have_any_client() const
 {
 	return clients.empty();
@@ -130,10 +135,6 @@ void Channel::removeInvitedUser(const string &username)
 		invitedUsers.erase(it);
 }
 
-void Channel::setPassword(const string &password)
-{
-	this->password = password;
-}
 
 void Channel::sendJoinMessages(const Client &client) const
 {
