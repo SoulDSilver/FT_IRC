@@ -29,6 +29,7 @@ class Server
     void handleClientData(int client_fd, size_t index);
     void removeClients(int client_fd, size_t index);
     bool dispatchCommand(Client &client, const pair<string, string> &command);
+    void handleQuit(Client &client, const string &parameters);
 
   public:
 	Server(int port, const string &password);
