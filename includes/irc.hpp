@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <utility>
+#include <cctype>
 #include <cstring>
 #include <csignal>
 #include <cerrno>
@@ -27,5 +29,8 @@
 
 
 using namespace std;
+
+typedef pair<string, string> CommandPair;
+typedef vector<CommandPair> CommandList;
 
 #endif 

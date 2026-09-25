@@ -31,4 +31,5 @@ class Commands
         const string& getCommand() const { return Command; }
         const string& getParameters() const { return Parameters; }
         const string& getPrefix() const { return Prefix; }
+        static bool parse(const string &line, CommandList &commands);
 };
