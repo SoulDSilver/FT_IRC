@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Commands.hpp"
 
 Server::Server() : Listen_port(0), Password(""), Listen_fd(-1)
 {
@@ -142,37 +143,48 @@ void Server::addNewClient()
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
 
+bool Server::dispatchCommand(Client &client, const pair<string, string> &command)
+{
+	(void)client;
+	if (command.first == "PASS" || command.first == "NICK"
+		|| command.first == "USER" || command.first == "QUIT")
+		return (true);
+	return (true);
+}
+
 void Server::handleClientData(int fd, size_t index)
 {
-	char	buff[1024];
-	string	jj;
-
-	//-> buffer for the received data
-	memset(buff, 0, sizeof(buff));                       
+	char buff[1024];
+	memset(buff, 0, sizeof(buff));
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
 	if (bytes <= 0)
 	{
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
 		removeClients(fd, index);
 		close(fd);
+		return;
 	}
-	else
+
+	map<int, Client>::iterator client = this->Clients.find(fd);
+	if (client == this->Clients.end())
+		return;
+
+	string data(buff, static_cast<size_t>(bytes));
+	client->second.appendInput(data);
+	cout << YEL << "Client <" << fd << "> Data: " << WHI << data << endl;
+
+	string line;
+	while (client->second.extractLine(line))
 	{
-		string data(buff);
-		if (data.substr(0, 4) == "JOIN")
+		CommandList parsed;
+		if (!Commands::parse(line, parsed))
+			continue;
+		for (CommandList::iterator it = parsed.begin();
+			it != parsed.end(); ++it)
 		{
-			if (!this->Channels.count(data.substr(5)))
-				createChannel(data.substr(5), this->Clients[fd]);
-			else
-				this->Channels.at(data.substr(5)).addClient(this->Clients[fd]);
+			if (!dispatchCommand(client->second, *it))
+				return;
 		}
-		buff[bytes] = '\0';
-		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		jj = ":" + Name + " 001 " + Clients[fd].getNick()
-			+ " :Welcome to the IRC Network " + Clients[fd].getNick() + "!"
-			+ Clients[fd].getUsername() + "@" + " \r\n";
-		send(fd, jj.c_str(), jj.length(), 0);
-		//-> echo the data back to the client
 	}
 }
 
