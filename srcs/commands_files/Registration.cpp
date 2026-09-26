@@ -27,6 +27,31 @@ bool constantTimeEquals(const string &provided, const string &expected)
 	return (difference == 0);
 }
 
+bool parseUserParameters(const string &parameters, string &username,
+	string &realName)
+{
+	size_t first = parameters.find(' ');
+	if (first == string::npos || first == 0)
+		return (false);
+
+	size_t second = parameters.find(' ', first + 1);
+	if (second == string::npos || second == first + 1)
+		return (false);
+
+	size_t third = parameters.find(' ', second + 1);
+	if (third == string::npos || third == second + 1)
+		return (false);
+
+	size_t colon = parameters.find(':', third + 1);
+	if (colon == string::npos || colon + 1 >= parameters.size())
+		return (false);
+
+	username = parameters.substr(0, first);
+	realName = parameters.substr(colon + 1);
+	return (!username.empty()
+		&& username.find_first_of(" \t\r\n:") == string::npos);
+}
+
 }
 
 void Server::sendNumericReply(Client &client, const string &code,
@@ -89,6 +114,21 @@ void Server::handleNick(Client &client, const string &parameters)
 
 	client.setNick(nickname);
 	client.setHasNick();
+}
+
+void Server::handleUser(Client &client, const string &parameters)
+{
+	string username;
+	string realName;
+	if (!Verify::parseUserParameters(parameters, username, realName))
+	{
+		sendNumericReply(client, "461", "USER :Not enough parameters");
+		return;
+	}
+
+	client.setUsername(username);
+	client.setRealName(realName);
+	client.setHasUsername();
 }
 
 void Server::handleQuit(Client &client, const string &parameters)

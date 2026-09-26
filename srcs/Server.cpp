@@ -155,12 +155,17 @@ bool Server::dispatchCommand(Client &client, const pair<string, string> &command
 		handleNick(client, command.second);
 		return (true);
 	}
+	if (command.first == "USER")
+	{
+		handleUser(client, command.second);
+		return (true);
+	}
 	if (command.first == "QUIT")
 	{
 		handleQuit(client, command.second);
 		return (false);
 	}
-	return (true);
+	return (false);
 }
 
 void Server::handleClientData(int fd, size_t index)

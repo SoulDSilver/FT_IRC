@@ -31,6 +31,7 @@ class Server
     bool dispatchCommand(Client &client, const pair<string, string> &command);
     void handlePass(Client &client, const string &parameters);
     void handleNick(Client &client, const string &parameters);
+    void handleUser(Client &client, const string &parameters);
     void handleQuit(Client &client, const string &parameters);
     void sendNumericReply(Client &client, const string &code, const string &parameters);
 
