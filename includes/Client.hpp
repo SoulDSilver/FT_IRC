@@ -12,6 +12,7 @@ class Client
 	string Nick;
 	string Username;
 	bool PasswordAccepted;
+	bool HasNick;
 	
 public:
 	Client();
@@ -29,6 +30,8 @@ public:
     void setUsername(const string &username);
     void setPasswordAccepted();
     bool isPasswordAccepted() const;
+    void setHasNick();
+    bool hasNick() const;
     void appendInput(const string &data);
     const string &getInbuff() const;
     bool extractLine(string &line);

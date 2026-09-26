@@ -1,11 +1,11 @@
 #include "Client.hpp"
 
 Client::Client() : Fd(-1), IpAddr(""), Username(""),
-    PasswordAccepted(false) {}
+    PasswordAccepted(false), HasNick(false) {}
 
 Client::Client(const Client &other)
     : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username),
-    PasswordAccepted(other.PasswordAccepted) {}
+    PasswordAccepted(other.PasswordAccepted), HasNick(other.HasNick) {}
 
 Client &Client::operator=(const Client &other)
 {
@@ -15,6 +15,7 @@ Client &Client::operator=(const Client &other)
         IpAddr = other.IpAddr;
         Username = other.Username;
         PasswordAccepted = other.PasswordAccepted;
+        HasNick = other.HasNick;
     }
     return *this;
 }
@@ -64,6 +65,16 @@ void Client::setPasswordAccepted()
 bool Client::isPasswordAccepted() const
 {
     return (this->PasswordAccepted);
+}
+
+void Client::setHasNick()
+{
+    this->HasNick = true;
+}
+
+bool Client::hasNick() const
+{
+    return (this->HasNick);
 }
 
 void Client::appendInput(const string &data)
