@@ -145,6 +145,11 @@ void Server::addNewClient()
 
 bool Server::dispatchCommand(Client &client, const pair<string, string> &command)
 {
+	if (command.first == "PASS")
+	{
+		handlePass(client, command.second);
+		return (true);
+	}
 	if (command.first == "QUIT")
 	{
 		handleQuit(client, command.second);
