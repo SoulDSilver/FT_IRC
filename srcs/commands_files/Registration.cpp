@@ -59,6 +59,38 @@ void Server::handlePass(Client &client, const string &parameters)
 	client.setPasswordAccepted();
 }
 
+void Server::handleNick(Client &client, const string &parameters)
+{
+	string nickname = parameters;
+	bool valid = !nickname.empty()
+		&& nickname.find_first_of(" \t\r\n:") == string::npos;
+	for (size_t i = 0; i < nickname.size(); i++)
+	{
+		if (iscntrl(static_cast<unsigned char>(nickname[i])))
+			valid = false;
+	}
+	if (!valid)
+	{
+		string value = nickname.empty() ? "*" : nickname;
+		sendNumericReply(client, "432", value + " :Erroneous nickname");
+		return;
+	}
+
+	for (map<int, Client>::const_iterator it = Clients.begin();
+		it != Clients.end(); ++it)
+	{
+		if (it->first != client.getFd() && it->second.getNick() == nickname)
+		{
+			sendNumericReply(client, "433",
+				nickname + " :Nickname is already in use");
+			return;
+		}
+	}
+
+	client.setNick(nickname);
+	client.setHasNick();
+}
+
 void Server::handleQuit(Client &client, const string &parameters)
 {
 	string reason = parameters;

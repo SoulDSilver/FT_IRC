@@ -150,6 +150,11 @@ bool Server::dispatchCommand(Client &client, const pair<string, string> &command
 		handlePass(client, command.second);
 		return (true);
 	}
+	if (command.first == "NICK")
+	{
+		handleNick(client, command.second);
+		return (true);
+	}
 	if (command.first == "QUIT")
 	{
 		handleQuit(client, command.second);
