@@ -1,9 +1,11 @@
 #include "Client.hpp"
 
-Client::Client() : Fd(-1), IpAddr(""), Username("") {}
+Client::Client() : Fd(-1), IpAddr(""), Username(""),
+    PasswordAccepted(false) {}
 
 Client::Client(const Client &other)
-    : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username) {}
+    : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username),
+    PasswordAccepted(other.PasswordAccepted) {}
 
 Client &Client::operator=(const Client &other)
 {
@@ -12,6 +14,7 @@ Client &Client::operator=(const Client &other)
         Fd = other.Fd;
         IpAddr = other.IpAddr;
         Username = other.Username;
+        PasswordAccepted = other.PasswordAccepted;
     }
     return *this;
 }
@@ -51,6 +54,16 @@ void Client::setNick(const string &nick)
 void Client::setUsername(const string &username)
 {
     this->Username = username;
+}
+
+void Client::setPasswordAccepted()
+{
+    this->PasswordAccepted = true;
+}
+
+bool Client::isPasswordAccepted() const
+{
+    return (this->PasswordAccepted);
 }
 
 void Client::appendInput(const string &data)

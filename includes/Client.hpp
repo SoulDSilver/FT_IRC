@@ -11,6 +11,7 @@ class Client
 	string IpAddr;
 	string Nick;
 	string Username;
+	bool PasswordAccepted;
 	
 public:
 	Client();
@@ -26,6 +27,8 @@ public:
 	string getNick() const;
 	void setNick(const string &nick);
     void setUsername(const string &username);
+    void setPasswordAccepted();
+    bool isPasswordAccepted() const;
     void appendInput(const string &data);
     const string &getInbuff() const;
     bool extractLine(string &line);
