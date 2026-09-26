@@ -1,11 +1,12 @@
 #include "Client.hpp"
 
-Client::Client() : Fd(-1), IpAddr(""), Username(""),
-    PasswordAccepted(false), HasNick(false) {}
+Client::Client() : Fd(-1), IpAddr(""), Username(""), RealName(""),
+    PasswordAccepted(false), HasNick(false), HasUsername(false) {}
 
 Client::Client(const Client &other)
     : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username),
-    PasswordAccepted(other.PasswordAccepted), HasNick(other.HasNick) {}
+    RealName(other.RealName), PasswordAccepted(other.PasswordAccepted),
+    HasNick(other.HasNick), HasUsername(other.HasUsername) {}
 
 Client &Client::operator=(const Client &other)
 {
@@ -14,8 +15,10 @@ Client &Client::operator=(const Client &other)
         Fd = other.Fd;
         IpAddr = other.IpAddr;
         Username = other.Username;
+        RealName = other.RealName;
         PasswordAccepted = other.PasswordAccepted;
         HasNick = other.HasNick;
+        HasUsername = other.HasUsername;
     }
     return *this;
 }
@@ -55,6 +58,26 @@ void Client::setNick(const string &nick)
 void Client::setUsername(const string &username)
 {
     this->Username = username;
+}
+
+void Client::setRealName(const string &realName)
+{
+    this->RealName = realName;
+}
+
+const string &Client::getRealName() const
+{
+    return (this->RealName);
+}
+
+void Client::setHasUsername()
+{
+    this->HasUsername = true;
+}
+
+bool Client::hasUsername() const
+{
+    return (this->HasUsername);
 }
 
 void Client::setPasswordAccepted()

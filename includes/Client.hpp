@@ -11,8 +11,10 @@ class Client
 	string IpAddr;
 	string Nick;
 	string Username;
+	string RealName;
 	bool PasswordAccepted;
 	bool HasNick;
+	bool HasUsername;
 	
 public:
 	Client();
@@ -28,6 +30,10 @@ public:
 	string getNick() const;
 	void setNick(const string &nick);
     void setUsername(const string &username);
+    void setRealName(const string &realName);
+    const string &getRealName() const;
+    void setHasUsername();
+    bool hasUsername() const;
     void setPasswordAccepted();
     bool isPasswordAccepted() const;
     void setHasNick();
