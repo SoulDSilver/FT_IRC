@@ -64,10 +64,44 @@ void Server::signalHandler(int signum)
 	Server::Signal = 1;
 }
 
-void Server::removeClients(int fd, size_t index)
+void Server::removeClients(int fd)
 {
-	this->Fds.erase(this->Fds.begin() + index);
-	this->Clients.erase(fd);
+	if (fd == this->Listen_fd)
+		return;
+
+	map<int, Client>::iterator client = this->Clients.find(fd);
+	if (client == this->Clients.end())
+		return;
+
+	for (map<string, Channel>::iterator it = this->Channels.begin();
+		it != this->Channels.end(); ++it)
+		it->second.removeClient(client->second);
+
+	map<string, Channel>::iterator channel = this->Channels.begin();
+	while (channel != this->Channels.end())
+	{
+		if (channel->second.getClients().empty())
+		{
+			map<string, Channel>::iterator empty = channel++;
+			this->Channels.erase(empty);
+		}
+		else
+			++channel;
+	}
+
+	for (vector<struct pollfd>::iterator it = this->Fds.begin();
+		it != this->Fds.end(); ++it)
+	{
+		if (it->fd == fd)
+		{
+			this->Fds.erase(it);
+			break;
+		}
+	}
+
+	cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
+	close(fd);
+	this->Clients.erase(client);
 }
 
 void Server::create_socket()
@@ -168,16 +202,14 @@ bool Server::dispatchCommand(Client &client, const pair<string, string> &command
 	return (false);
 }
 
-void Server::handleClientData(int fd, size_t index)
+void Server::handleClientData(int fd)
 {
 	char buff[1024];
 	memset(buff, 0, sizeof(buff));
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
 	if (bytes <= 0)
 	{
-		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
-		removeClients(fd, index);
-		close(fd);
+		removeClients(fd);
 		return;
 	}
 
@@ -220,7 +252,7 @@ void Server::run()
 				if (Fds[i].fd == this->Listen_fd)
 					addNewClient(); //-> accept new client
 				else
-					handleClientData(Fds[i].fd, i);
+					handleClientData(Fds[i].fd);
 			}
 		}
 	}

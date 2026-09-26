@@ -26,8 +26,8 @@ class Server
 
 	void createChannel(const std::string &channelName, Client &client);
     void addNewClient();
-    void handleClientData(int client_fd, size_t index);
-    void removeClients(int client_fd, size_t index);
+    void handleClientData(int client_fd);
+    void removeClients(int client_fd);
     bool dispatchCommand(Client &client, const pair<string, string> &command);
     void handlePass(Client &client, const string &parameters);
     void handleNick(Client &client, const string &parameters);
