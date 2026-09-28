@@ -85,14 +85,10 @@ void Server::removeClients(int fd)
 			break;
 		}
 	}
-
 	// Remove the client from every channel it belongs to.
 	for (map<string, Channel>::iterator it = this->channels.begin(); it != this->channels.end(); ++it)
-	{
 		if (it->second.isClientPresent(fd))
 			it->second.removeClient(clients.at(fd));
-	}
-
 	close(fd);
 	clients.erase(fd);
 }
@@ -143,31 +139,22 @@ void Server::create_socket()
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(this->listen_port);
 	addr.sin_family = AF_INET;
-	//
+
 	this->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->listen_fd == -1)
 		throw runtime_error("Error creating socket");
-	//
 	yes = 1;
+
 	if (setsockopt(this->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes,
 				   sizeof(yes)) == -1)
-	{
 		throw(runtime_error("faild to set option (SO_REUSEADDR) on socket"));
-	}
-	//
 	if (bind(this->listen_fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
-	{
 		throw(runtime_error("Error binding socket"));
-	}
-	//
 	if (fcntl(this->listen_fd, F_SETFL, O_NONBLOCK) == -1)
-	{
 		throw(runtime_error("Error setting socket to non-blocking"));
-	}
-	//
 	if (listen(this->listen_fd, MAXPENDCONN) == -1)
 		throw(runtime_error("Error listening on socket"));
-	//
+
 	NewP.fd = this->listen_fd;
 	NewP.events = POLLIN;
 	NewP.revents = 0;
@@ -187,9 +174,8 @@ void Server::addNewClient()
 	struct pollfd NewPoll;
 	socklen_t len;
 	int incofd;
-	string jj;
+	Client cli;
 
-	Client cli; //-> create a new client
 	len = sizeof(cliadd);
 	memset(&cliadd, 0, sizeof(cliadd));
 	incofd = accept(this->listen_fd, (sockaddr *)&(cliadd), &len);
@@ -204,22 +190,15 @@ void Server::addNewClient()
 		close(incofd);
 		return;
 	}
-	NewPoll.fd = incofd;	 //-> add the client socket to the pollfd
-	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
-	NewPoll.revents = 0;	 //-> set the revents to 0
+	NewPoll.fd = incofd;
+	NewPoll.events = POLLIN;
+	NewPoll.revents = 0;
 	cli.setFd(incofd);
-	//-> set the client file descriptor
 	cli.setIpAddr(inet_ntoa((cliadd.sin_addr)));
-	//-> convert the ip address to string and set it
-	clients[incofd] = cli;
-	//-> add the client to the map keyed by file descriptor
+	clients.insert(make_pair(incofd, cli));
+
 	fds.push_back(NewPoll);
-	std::ostringstream guestName;
-	guestName << "Guest" << incofd;
-	clients.at(incofd).setUsername(guestName.str());
-	clients.at(incofd).setNick(guestName.str());
 	welcomeMessage(clients.at(incofd));
-	//-> add the client socket to the pollfd
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
 
@@ -234,27 +213,27 @@ void Server::handleClientData(int fd)
 	string message;
 	string serverName;
 
-	//-> buffer for the received data
-	memset(buff, 0, sizeof(buff));						 //-> clear the buffer
-	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
+	memset(buff, 0, sizeof(buff));
+	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
+
 	if (bytes <= 0)
-	{ //-> check if the client disconnected
+	{
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
-		removeClients(fd); //-> clear the client
-		close(fd);		   //-> close the client socket
+		removeClients(fd);
+		close(fd);
 	}
 	else
-	{ //-> print the received data
+	{
 		map<int, Client>::iterator client = this->clients.find(fd);
 		if (client == this->clients.end())
 			return;
 
 		string cca(buff);
+		string line;
 
 		client->second.appendInput(cca);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << cca << endl;
 
-		string line;
 		while (client->second.extractLine(line))
 		{
 			CommandList parsed;
@@ -263,7 +242,7 @@ void Server::handleClientData(int fd)
 			for (CommandList::iterator it = parsed.begin();
 				 it != parsed.end(); ++it)
 			{
-				if (!dispatchCommand(client->second, *it))
+				if (!dispatchCommand(client->second, it))
 					return;
 			}
 		}
@@ -278,7 +257,7 @@ void Server::handleClientData(int fd)
 			if (!serverName.empty())
 				pongmessage(fd, serverName);
 		}
-		/*================*/
+		/*================================================================================*/
 		if (data.substr(0, 4) == "JOIN")
 		{
 			channelName = data.substr(5);
@@ -300,7 +279,8 @@ void Server::handleClientData(int fd)
 				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
 			}
 		}
-		else if (data.substr(0, 4) == "PART")
+		/*================================================================================*/
+		if (data.substr(0, 4) == "PART")
 		{
 			channelName = data.substr(5);
 			channelName.erase(remove(channelName.begin(), channelName.end(),
@@ -324,6 +304,7 @@ void Server::handleClientData(int fd)
 					removeChannel(channelName);
 			}
 		}
+		/*================================================================================*/
 		if (data.substr(0, 7) == "PRIVMSG")
 		{
 			pos = data.find(" ");
@@ -377,9 +358,14 @@ void Server::run()
 	cout << "The Server Closed!" << endl;
 }
 
-bool Server::dispatchCommand(Client &client, const pair<string, string> &command)
+//typedef pair<int, string> CommandPair;
+//typedef pair<string, vector<CommandPair> > CommandPairVector;
+//typedef vector<CommandPairVector> CommandList;
+//
+
+bool Server::dispatchCommand(Client &client, const CommandList &command)
 {
-	if (command.first == "PASS")
+	if (command.front == "PASS")
 	{
 		handlePass(client, command.second);
 		return (true);
