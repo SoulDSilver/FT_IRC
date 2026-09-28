@@ -1,11 +1,13 @@
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
+# include "Client.hpp"
+# include "Channel.hpp"
 
-#include "Client.hpp"
-#include "Channel.hpp"
+# define MAXPENDCONN 10
 
-#define MAXPENDCONN 10
+class Client;
+class Channel;
 
 class Server
 {
@@ -17,21 +19,19 @@ class Server
 	string name;
 	Server();
 	void create_socket();
-	
+
 	vector<struct pollfd> fds;
-    map<int, Client> clients;
-    map<string, Channel> channels;
-	
-	void closeFds(); //-> method to close all the clients and the server socket
+	map<int, Client> clients;
+	map<string, Channel> channels;
 
+	void closeFds();
 	void createChannel(const string &channelName, Client &client);
-    void addNewClient();
-    void handleClientData(int client_fd);
-    void removeClients(int client_fd);
+	void addNewClient();
+	void handleClientData(int client_fd);
+	void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
-	void pongmessage(int fd,const vector<string> &token);
+	void pongmessage(int fd, const vector<string> &token);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
-
 	void removeChannel(const string &channelname);
 
   public:
@@ -40,12 +40,9 @@ class Server
 	Server &operator=(const Server &other);
 	~Server();
 
-	// importants methods
 	void run();
-    static void signalHandler(int signum); //-> static method to handle signals
+	static void signalHandler(int signum);
 
-	// geters and setters
- 
 	const string &getName() const;
 	const string &getPassword() const;
 	int getListenPort() const;
