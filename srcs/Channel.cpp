@@ -135,7 +135,6 @@ void Channel::removeInvitedUser(const string &username)
 		invitedUsers.erase(it);
 }
 
-
 void Channel::sendJoinMessages(const Client &client) const
 {
 	string host = client.getIpAddr();
@@ -195,6 +194,5 @@ bool Channel::isClientPresent(int fd) const
 {
 	return (this->clients.find(fd) != this->clients.end());
 }
-
 
 //  /connect localhost 1024 44

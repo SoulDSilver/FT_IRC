@@ -2,7 +2,7 @@
 
 Commands::Commands() : command(""), parameters(""), prefix("") {}
 
-Commands::Commands(const string &command, const string &parameters, const string &prefix) :  command(command), parameters(parameters), prefix(prefix)
+Commands::Commands(const string &command, const string &parameters, const string &prefix) : command(command), parameters(parameters), prefix(prefix)
 {
 }
 
@@ -30,7 +30,7 @@ bool Commands::parse(const string &line, CommandList &commands)
 
     size_t end = line.find_first_of(" \t", start);
     string command = (end == string::npos) ? line.substr(start)
-        : line.substr(start, end - start);
+                                           : line.substr(start, end - start);
     for (size_t i = 0; i < command.size(); i++)
         command[i] = static_cast<char>(toupper(static_cast<unsigned char>(command[i])));
 

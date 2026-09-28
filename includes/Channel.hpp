@@ -29,7 +29,7 @@ public:
     const vector<string> &getSettings() const;
     const vector<string> &getInvitedUsers() const;
 
-    bool  have_any_client() const;
+    bool have_any_client() const;
     void addClient(const Client &client);
     void removeClient(const Client &client);
 

@@ -126,9 +126,6 @@ bool Client::extractLine(string &line)
     return (true);
 }
 
-
-
-
 ostream &operator<<(ostream &stream, const Client &cl)
 {
     stream << "Cliente [FD: " << cl.getFd()

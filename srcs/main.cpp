@@ -1,7 +1,7 @@
 #include "irc.hpp"
 #include "Server.hpp"
 
-int	main(int ac, char **av)
+int main(int ac, char **av)
 {
 	if (ac != 3)
 	{
@@ -16,7 +16,7 @@ int	main(int ac, char **av)
 	Server server(atoi(av[1]), av[2]);
 	try
 	{
-        signal(SIGINT, Server::signalHandler); // (ctrl + c)
+		signal(SIGINT, Server::signalHandler);	// (ctrl + c)
 		signal(SIGQUIT, Server::signalHandler); // (ctrl + \)
 		server.run();
 	}

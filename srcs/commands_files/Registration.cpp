@@ -2,60 +2,60 @@
 
 namespace Verify
 {
-bool compareWithStrcmp(const string &provided, const string &expected)
-{
-	return (strcmp(provided.c_str(), expected.c_str()) == 0);
-}
-bool constantTimeEquals(const string &provided, const string &expected)
-{
-	size_t maxLength = provided.size() > expected.size()
-		? provided.size() : expected.size();
-	volatile unsigned char difference = 0;
-
-	for (size_t i = 0; i < maxLength; i++)
+	bool compareWithStrcmp(const string &provided, const string &expected)
 	{
-		unsigned char providedChar = 0;
-		unsigned char expectedChar = 0;
-		if (i < provided.size())
-			providedChar = static_cast<unsigned char>(provided[i]);
-		if (i < expected.size())
-			expectedChar = static_cast<unsigned char>(expected[i]);
-		difference |= static_cast<unsigned char>(providedChar ^ expectedChar);
+		return (strcmp(provided.c_str(), expected.c_str()) == 0);
 	}
-	if (provided.size() != expected.size())
-		difference |= 1;
-	return (difference == 0);
-}
+	bool constantTimeEquals(const string &provided, const string &expected)
+	{
+		size_t maxLength = provided.size() > expected.size()
+							   ? provided.size()
+							   : expected.size();
+		volatile unsigned char difference = 0;
 
-bool parseUserParameters(const string &parameters, string &username,
-	string &realName)
-{
-	size_t first = parameters.find(' ');
-	if (first == string::npos || first == 0)
-		return (false);
+		for (size_t i = 0; i < maxLength; i++)
+		{
+			unsigned char providedChar = 0;
+			unsigned char expectedChar = 0;
+			if (i < provided.size())
+				providedChar = static_cast<unsigned char>(provided[i]);
+			if (i < expected.size())
+				expectedChar = static_cast<unsigned char>(expected[i]);
+			difference |= static_cast<unsigned char>(providedChar ^ expectedChar);
+		}
+		if (provided.size() != expected.size())
+			difference |= 1;
+		return (difference == 0);
+	}
 
-	size_t second = parameters.find(' ', first + 1);
-	if (second == string::npos || second == first + 1)
-		return (false);
+	bool parseUserParameters(const string &parameters, string &username,
+							 string &realName)
+	{
+		size_t first = parameters.find(' ');
+		if (first == string::npos || first == 0)
+			return (false);
 
-	size_t third = parameters.find(' ', second + 1);
-	if (third == string::npos || third == second + 1)
-		return (false);
+		size_t second = parameters.find(' ', first + 1);
+		if (second == string::npos || second == first + 1)
+			return (false);
 
-	size_t colon = parameters.find(':', third + 1);
-	if (colon == string::npos || colon + 1 >= parameters.size())
-		return (false);
+		size_t third = parameters.find(' ', second + 1);
+		if (third == string::npos || third == second + 1)
+			return (false);
 
-	username = parameters.substr(0, first);
-	realName = parameters.substr(colon + 1);
-	return (!username.empty()
-		&& username.find_first_of(" \t\r\n:") == string::npos);
-}
+		size_t colon = parameters.find(':', third + 1);
+		if (colon == string::npos || colon + 1 >= parameters.size())
+			return (false);
+
+		username = parameters.substr(0, first);
+		realName = parameters.substr(colon + 1);
+		return (!username.empty() && username.find_first_of(" \t\r\n:") == string::npos);
+	}
 
 }
 
 void Server::sendNumericReply(Client &client, const string &code,
-	const string &parameters)
+							  const string &parameters)
 {
 	string nickname = client.getNick();
 	if (nickname.empty())
@@ -87,8 +87,7 @@ void Server::handlePass(Client &client, const string &parameters)
 void Server::handleNick(Client &client, const string &parameters)
 {
 	string nickname = parameters;
-	bool valid = !nickname.empty()
-		&& nickname.find_first_of(" \t\r\n:") == string::npos;
+	bool valid = !nickname.empty() && nickname.find_first_of(" \t\r\n:") == string::npos;
 	for (size_t i = 0; i < nickname.size(); i++)
 	{
 		if (iscntrl(static_cast<unsigned char>(nickname[i])))
@@ -102,12 +101,12 @@ void Server::handleNick(Client &client, const string &parameters)
 	}
 
 	for (map<int, Client>::const_iterator it = clients.begin();
-		it != clients.end(); ++it)
+		 it != clients.end(); ++it)
 	{
 		if (it->first != client.getFd() && it->second.getNick() == nickname)
 		{
 			sendNumericReply(client, "433",
-				nickname + " :Nickname is already in use");
+							 nickname + " :Nickname is already in use");
 			return;
 		}
 	}

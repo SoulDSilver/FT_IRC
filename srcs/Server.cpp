@@ -277,7 +277,6 @@ void Server::handleClientData(int fd)
 							 serverName.end());
 			if (!serverName.empty())
 				pongmessage(fd, serverName);
-			
 		}
 		/*================*/
 		if (data.substr(0, 4) == "JOIN")

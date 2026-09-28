@@ -1,17 +1,17 @@
 #ifndef SERVER_HPP
-# define SERVER_HPP
+#define SERVER_HPP
 
-# include "Client.hpp"
-# include "Channel.hpp"
+#include "Client.hpp"
+#include "Channel.hpp"
 
-# define MAXPENDCONN 10
+#define MAXPENDCONN 10
 
 class Client;
 class Channel;
 
 class Server
 {
-  private:
+private:
 	int listen_port;
 	const string password;
 	int listen_fd;
@@ -40,7 +40,7 @@ class Server
 	void handleQuit(Client &client, const string &parameters);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
 
-  public:
+public:
 	Server(int port, const string &password);
 	Server(const Server &other);
 	Server &operator=(const Server &other);
