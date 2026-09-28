@@ -1,10 +1,10 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), ipAddr(""), username("") {}
+Client::Client() : fd(-1), ipAddr(""), username(""), realName(""), passwordAccepted(false), hasNick(false), hasUsername(false) {}
 
 Client::Client(const Client &other)
 {
-    *this = other; 
+    *this = other;
 }
 
 Client &Client::operator=(const Client &other)
@@ -12,11 +12,15 @@ Client &Client::operator=(const Client &other)
     if (this != &other)
     {
         fd = other.fd;
-        inbuff = other.inbuff;   
-        outbuff = other.outbuff; 
+        inbuff = other.inbuff;
+        outbuff = other.outbuff;
         ipAddr = other.ipAddr;
         nick = other.nick;
         username = other.username;
+        realName = other.realName;
+        passwordAccepted = other.passwordAccepted;
+        hasNick = other.hasNick;
+        hasUsername = other.hasUsername;
     }
     return *this;
 }
@@ -61,6 +65,42 @@ void Client::setNick(const string &nick)
 void Client::setUsername(const string &username)
 {
     this->username = username;
+}
+
+const string &Client::getRealName() const
+{
+    return realName;
+}
+void Client::setRealName(const string &realName)
+{
+    this->realName = realName;
+}
+
+bool Client::isPasswordAccepted() const
+{
+    return passwordAccepted;
+}
+void Client::setPasswordAccepted()
+{
+    passwordAccepted = true;
+}
+
+bool Client::hasNickSet() const
+{
+    return hasNick;
+}
+void Client::setHasNick()
+{
+    hasNick = true;
+}
+
+bool Client::hasUsernameSet() const
+{
+    return hasUsername;
+}
+void Client::setHasUsername()
+{
+    hasUsername = true;
 }
 
 ostream &operator<<(ostream &stream, const Client &cl)

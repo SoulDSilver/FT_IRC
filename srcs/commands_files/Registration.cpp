@@ -61,7 +61,7 @@ void Server::sendNumericReply(Client &client, const string &code,
 	if (nickname.empty())
 		nickname = "*";
 
-	string reply = ":" + Name + " " + code + " " + nickname;
+	string reply = ":" + name + " " + code + " " + nickname;
 	if (!parameters.empty())
 		reply += " " + parameters;
 	reply += "\r\n";
@@ -75,7 +75,7 @@ void Server::handlePass(Client &client, const string &parameters)
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (!Verify::compareWithStrcmp(parameters, Password))
+	if (!Verify::compareWithStrcmp(parameters, password))
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
 		return;
@@ -101,8 +101,8 @@ void Server::handleNick(Client &client, const string &parameters)
 		return;
 	}
 
-	for (map<int, Client>::const_iterator it = Clients.begin();
-		it != Clients.end(); ++it)
+	for (map<int, Client>::const_iterator it = clients.begin();
+		it != clients.end(); ++it)
 	{
 		if (it->first != client.getFd() && it->second.getNick() == nickname)
 		{
