@@ -275,6 +275,34 @@ void Server::handleClientData(int fd)
 		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
+		//verificando se esta vazio
+		
+		vector<string> dt;
+		size_t start = 0;
+		size_t pos = data.find(' ', start);
+		while(pos != string::npos){
+			dt.push_back(data.substr(start, pos - start));
+			start = pos + 1;
+			pos = data.find(' ', start);
+		}
+		dt.push_back(data.substr(start, data.size() - start - 2));
+		for (size_t i = 0; i < dt.size(); i++){
+    		cout << i << " - " << dt[i] << endl;
+		}
+		string command = dt[0];
+		for (size_t i = 0; i < command.size(); i++)
+    		command[i] = toupper(command[i]);
+
+		if(command == "TOPIC"){
+			if(dt.size() == 2){
+				string target = dt[1];
+				if(channels.count(target) == 1){
+					cout << "canal: " << dt[1] << endl;
+					channels.at(target).sendMessge("Nome do Canal se tiver", fd);
+				}
+			}
+		}
+
 	}
 }
 
