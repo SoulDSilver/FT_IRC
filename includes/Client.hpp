@@ -16,6 +16,9 @@ public:
 	Client();
 	Client(const Client &other);
 	Client &operator=(const Client &other);
+	bool operator==(const Client &other) const;
+
+
 	~Client();
 
 	int getFd() const;
@@ -26,5 +29,8 @@ public:
 	string getNick() const;
 	void setNick(const string &nick);
     void setUsername(const string &username);
+	
 };
+
+ostream &operator<<(std::ostream &stream, const Client &cl);
 

@@ -5,13 +5,13 @@ Server::Server() : listen_port(0), password(""), listen_fd(-1)
 }
 
 Server::Server(int port, const string &password) : listen_port(port),
-	password(password), listen_fd(-1)
+												   password(password), listen_fd(-1)
 {
 	name = "Broadcast_Server";
 }
 
 Server::Server(const Server &other) : listen_port(other.listen_port),
-	password(other.password), listen_fd(other.listen_fd), name(other.name)
+									  password(other.password), listen_fd(other.listen_fd), name(other.name)
 {
 }
 
@@ -48,12 +48,12 @@ void Server::closeFds()
 
 const string &Server::getName() const
 {
-    return (name);
+	return (name);
 }
 
 const string &Server::getPassword() const
 {
-    return (password);
+	return (password);
 }
 
 int Server::getListenPort() const
@@ -80,7 +80,7 @@ void Server::removeClients(int fd)
 		if (this->fds[i].fd == fd)
 		{
 			this->fds.erase(this->fds.begin() + i);
-			break ;
+			break;
 		}
 	}
 	clients.erase(fd);
@@ -94,20 +94,25 @@ void Server::welcomeMessage(Client &client)
 
 bool Server::isClientInChannel(const string &channelName, int client_fd) const
 {
-	if(channels.count(channelName) == 1)
+	if (channels.count(channelName) == 1)
 	{
-		const Channel &channel = channels.at(channelName);
-		const map<int, Client> &channelClients = channel.getClients();
+		const map<int, Client> &channelClients = channels.at(channelName).getClients();
 		return channelClients.find(client_fd) != channelClients.end();
 	}
 	return false;
 }
 
+void Server::removeChannel(const string &channelname)
+{
+	channels.erase(channelname);
+	cout << channelname << " have been erase!" << endl;
+}
+
 void Server::create_socket()
 {
-	int					yes;
-	struct sockaddr_in	addr;
-	struct pollfd		NewP;
+	int yes;
+	struct sockaddr_in addr;
+	struct pollfd NewP;
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -120,7 +125,7 @@ void Server::create_socket()
 	//
 	yes = 1;
 	if (setsockopt(this->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes,
-			sizeof(yes)) == -1)
+				   sizeof(yes)) == -1)
 	{
 		throw(runtime_error("faild to set option (SO_REUSEADDR) on socket"));
 	}
@@ -153,11 +158,11 @@ void Server::createChannel(const string &channelname, Client &client)
 
 void Server::addNewClient()
 {
-	struct sockaddr_in	cliadd;
-	struct pollfd		NewPoll;
-	socklen_t			len;
-	int					incofd;
-	string				jj;
+	struct sockaddr_in cliadd;
+	struct pollfd NewPoll;
+	socklen_t len;
+	int incofd;
+	string jj;
 
 	Client cli; //-> create a new client
 	len = sizeof(cliadd);
@@ -166,17 +171,17 @@ void Server::addNewClient()
 	if (incofd == -1)
 	{
 		cout << "accept() failed" << endl;
-		return ;
+		return;
 	}
 	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		cout << "fcntl() failed" << endl;
 		close(incofd);
-		return ;
+		return;
 	}
-	NewPoll.fd = incofd;     //-> add the client socket to the pollfd
+	NewPoll.fd = incofd;	 //-> add the client socket to the pollfd
 	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
-	NewPoll.revents = 0;     //-> set the revents to 0
+	NewPoll.revents = 0;	 //-> set the revents to 0
 	cli.setFd(incofd);
 	//-> set the client file descriptor
 	cli.setIpAddr(inet_ntoa((cliadd.sin_addr)));
@@ -196,16 +201,16 @@ void Server::addNewClient()
 
 void Server::handleClientData(int fd)
 {
-	char	buff[1024];
+	char buff[1024];
 
 	//-> buffer for the received data
-	memset(buff, 0, sizeof(buff));                  //-> clear the buffer
+	memset(buff, 0, sizeof(buff));						 //-> clear the buffer
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0); //-> receive the data
 	if (bytes <= 0)
 	{ //-> check if the client disconnected
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
 		removeClients(fd); //-> clear the client
-		close(fd);         //-> close the client socket
+		close(fd);		   //-> close the client socket
 	}
 	else
 	{ //-> print the received data
@@ -217,30 +222,57 @@ void Server::handleClientData(int fd)
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
 			if (channels.count(channelName) == 0)
+			{
 				createChannel(channelName, clients.at(fd));
-			else if(channels.count(channelName) == 1)
+				channels.at(channelName).sendJoinMessages(clients.at(fd));
+			}
+			else if (channels.count(channelName) == 1)
 			{
 				channels.at(channelName).addClient(clients.at(fd));
+				channels.at(channelName).sendJoinMessages(clients.at(fd));
 				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
 			}
 		}
-		if(data.substr(0, 7) == "PRIVMSG")
+		else if (data.substr(0, 4) == "PART")
+		{
+			string channelName = data.substr(5);
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
+			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			size_t reasonPosition = channelName.find(" :");
+			string reason;
+			if (reasonPosition != string::npos)
+			{
+				reason = channelName.substr(reasonPosition + 2);
+				channelName = channelName.substr(0, reasonPosition);
+			}
+			if (channels.count(channelName) == 1 && isClientInChannel(channelName, fd))
+			{
+				channels.at(channelName).sendPartMessage(clients.at(fd), reason);
+				channels.at(channelName).removeClient(clients.at(fd));
+
+				cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
+				if (channels.at(channelName).have_any_client())
+					removeChannel(channelName);
+			}
+
+		}
+		if (data.substr(0, 7) == "PRIVMSG")
 		{
 			size_t pos = data.find(" ");
 			if (pos != string::npos)
 			{
-				string target = data.substr(8, pos - 8);
-			
-
-				string message = data.substr(pos + 1);
+				string target = data.substr(pos + 1, data.find(" ", pos + 1) - pos - 1);
+				cout << GRE << "target" << target << WHI << endl;
+				string message = data.substr(data.find(":", pos) + 1);
+				message.erase(remove(message.begin(), message.end(), '\r'), message.end());
+				message.erase(remove(message.begin(), message.end(), '\n'), message.end());
 				if (channels.count(target) == 1)
 				{
-					if(isClientInChannel(target, fd))
+					if (isClientInChannel(target, fd))
 						channels.at(target).broadcastMessage(message, fd);
 				}
 			}
 		}
-		
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 	}
@@ -272,6 +304,7 @@ void Server::run()
 			}
 		}
 	}
-	cout << endl << "Signal Received!" << endl;
+	cout << endl
+		 << "Signal Received!" << endl;
 	cout << "The Server Closed!" << endl;
 }

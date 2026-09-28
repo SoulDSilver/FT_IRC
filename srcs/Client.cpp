@@ -2,20 +2,28 @@
 
 Client::Client() : fd(-1), ipAddr(""), username("") {}
 
-
-
 Client::Client(const Client &other)
-    : fd(other.fd), ipAddr(other.ipAddr), username(other.username) {}
+{
+    *this = other; 
+}
 
 Client &Client::operator=(const Client &other)
 {
     if (this != &other)
     {
         fd = other.fd;
+        inbuff = other.inbuff;   
+        outbuff = other.outbuff; 
         ipAddr = other.ipAddr;
+        nick = other.nick;
         username = other.username;
     }
     return *this;
+}
+
+bool Client::operator==(const Client &other) const
+{
+    return (this->fd == other.fd);
 }
 
 Client::~Client() {}
@@ -55,3 +63,13 @@ void Client::setUsername(const string &username)
     this->username = username;
 }
 
+ostream &operator<<(ostream &stream, const Client &cl)
+{
+    stream << "Cliente [FD: " << cl.getFd()
+           << " | Nick: " << (cl.getNick().empty() ? "<sem_nick>" : cl.getNick())
+           << " | User: " << (cl.getUsername().empty() ? "<sem_user>" : cl.getUsername())
+           << " | IP: " << cl.getIpAddr()
+           << "]";
+
+    return stream;
+}

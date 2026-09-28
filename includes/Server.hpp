@@ -30,6 +30,8 @@ class Server
 	void welcomeMessage(Client &client);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 
+	void removeChannel(const string &channelname);
+
   public:
 	Server(int port, const string &password);
 	Server(const Server &other);
