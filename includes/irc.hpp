@@ -31,4 +31,22 @@
 
 using namespace std;
 
+typedef pair<string, string> CommandPair;
+typedef vector<CommandPair> CommandList;
+
+// Enum para identificar cada parâmetro parseado
+enum ParsedParamId
+{
+	PP_UNKNOWN = 0,
+	PP_USER = 1,     // nome de usuário no comando USER
+	PP_NICK = 2,     // apelido no comando NICK
+	PP_MODE = 3,     // modos no comando MODE
+	PP_CHANNEL = 4,  // nome do canal
+	PP_TARGET = 5,   // alvo (usuário) para PRIVMSG/INVITE/KICK
+	PP_MESSAGE = 6,  // corpo da mensagem (PRIVMSG/QUIT)
+	PP_REASON = 7,   // motivo (KICK/PART/QUIT)
+	PP_TOPIC = 8     // texto do tópico (TOPIC)
+};
+
+
 #endif 

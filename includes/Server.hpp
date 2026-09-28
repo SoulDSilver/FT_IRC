@@ -30,7 +30,7 @@ class Server
 	void handleClientData(int client_fd);
 	void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
-	void pongmessage(int fd, const vector<string> &token);
+	void pongmessage(int fd, const string &a);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void removeChannel(const string &channelname);
 	bool dispatchCommand(Client &client, const pair<string, string> &command);
