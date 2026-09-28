@@ -5,7 +5,7 @@
 
 class Client
 {
-  private:
+private:
 	int fd;
 	string inbuff;
 	string outbuff;
@@ -42,6 +42,16 @@ public:
 	bool hasUsernameSet() const;
 	void setHasUsername();
 
+	const string &getInbuff() const;
+	void appendInput(const string &inbuff);
+	const string &getOutBuff() const;
+	bool extractLine(string &line);
+	void setOutBuff(const string &outbuff);
+	void appendToOutBuff(const string &data);
+	void clearInBuff();
+	void clearOutBuff();
+	bool isValid() const;
+	void reset();
 };
 
 ostream &operator<<(std::ostream &stream, const Client &cl);

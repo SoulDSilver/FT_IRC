@@ -103,6 +103,32 @@ void Client::setHasUsername()
     hasUsername = true;
 }
 
+void Client::appendInput(const string &data)
+{
+    this->inbuff += data;
+}
+
+const string &Client::getInbuff() const
+{
+    return (this->inbuff);
+}
+
+bool Client::extractLine(string &line)
+{
+    size_t end = this->inbuff.find('\n');
+    if (end == string::npos)
+        return (false);
+
+    line = this->inbuff.substr(0, end);
+    if (!line.empty() && line[line.size() - 1] == '\r')
+        line.erase(line.size() - 1);
+    this->inbuff.erase(0, end + 1);
+    return (true);
+}
+
+
+
+
 ostream &operator<<(ostream &stream, const Client &cl)
 {
     stream << "Cliente [FD: " << cl.getFd()
