@@ -31,7 +31,7 @@
 using namespace std;
 
 typedef pair<int, string> CommandPair;
-typedef pair<string, vector<CommandPair>> CommandPairVector;
+typedef pair<string, vector<CommandPair> > CommandPairVector;
 typedef vector<CommandPairVector> CommandList;
 
 // Enum para identificar cada parâmetro parseado
