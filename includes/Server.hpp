@@ -33,7 +33,7 @@ private:
 	void pongmessage(int fd, const string &a);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void removeChannel(const string &channelname);
-	bool dispatchCommand(Client &client, const pair<string, string> &command);
+	bool dispatchCommand(Client &client, const CommandList &command);
 	void handlePass(Client &client, const string &parameters);
 	void handleNick(Client &client, const string &parameters);
 	void handleUser(Client &client, const string &parameters);

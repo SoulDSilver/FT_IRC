@@ -59,7 +59,7 @@ const vector<string> &Channel::getSettings() const
 	return (settings);
 }
 
-const vector<string> &Channel::getInvitedUsers() const
+const vector<int> &Channel::getInvitedUsers() const
 {
 	return (invitedUsers);
 }
@@ -122,15 +122,15 @@ void Channel::removeSetting(const string &setting)
 		settings.erase(it);
 }
 
-void Channel::addInvitedUser(const string &username)
+void Channel::addInvitedUser(int a)
 {
-	if (find(invitedUsers.begin(), invitedUsers.end(), username) == invitedUsers.end())
-		invitedUsers.push_back(username);
+	if (find(invitedUsers.begin(), invitedUsers.end(), a) == invitedUsers.end())
+		invitedUsers.push_back(a);
 }
 
-void Channel::removeInvitedUser(const string &username)
+void Channel::removeInvitedUser(const int &a)
 {
-	vector<string>::iterator it = find(invitedUsers.begin(), invitedUsers.end(), username);
+	vector<int>::iterator it =  find(invitedUsers.begin(), invitedUsers.end(), a);
 	if (it != invitedUsers.end())
 		invitedUsers.erase(it);
 }
