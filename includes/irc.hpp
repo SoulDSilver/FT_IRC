@@ -30,8 +30,9 @@
 
 using namespace std;
 
-typedef pair<string, string> CommandPair;
-typedef vector<CommandPair> CommandList;
+typedef pair<int, string> CommandPair;
+typedef pair<string, vector<CommandPair>> CommandPairVector;
+typedef vector<CommandPairVector> CommandList;
 
 // Enum para identificar cada parâmetro parseado
 enum ParsedParamId
