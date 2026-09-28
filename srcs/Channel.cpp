@@ -191,4 +191,10 @@ void Channel::broadcastMessage(const string &message, int senderFd) const
 	}
 }
 
+bool Channel::isClientPresent(int fd) const
+{
+	return (this->clients.find(fd) != this->clients.end());
+}
+
+
 //  /connect localhost 1024 44

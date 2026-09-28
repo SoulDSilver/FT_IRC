@@ -33,6 +33,7 @@ public:
     void addClient(const Client &client);
     void removeClient(const Client &client);
 
+    bool isClientPresent(int fd) const;
     void listclients() const;
     void addOperator(const Client &client);
     void removeOperator(const Client &client);
