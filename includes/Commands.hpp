@@ -14,8 +14,7 @@ class Commands
 
     public:
         Commands();
-        Commands(const string& command, const string& parameters, const string& prefix)
-            : command(command), parameters(parameters), prefix(prefix) {}
+        Commands(const string& command, const string& parameters, const string& prefix);
         Commands(const Commands& other);
         Commands& operator=(const Commands& other);
         ~Commands();
