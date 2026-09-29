@@ -185,26 +185,26 @@ bool Server::checkClientRegistered(Client &client)
 
 }
 
-bool Server::dispatchCommand(Client &client, const pair<string, string> &command)
+bool Server::dispatchCommand(Client &client, const CommandPairVector &command)
 {
 	if (command.first == "PASS")
 	{
-		handlePass(client, command.second);
+		handlePass(client, command);
 		return (true);
 	}
 	if (command.first == "NICK")
 	{
-		handleNick(client, command.second);
+		handleNick(client, command);
 		return (true);
 	}
 	if (command.first == "USER")
 	{
-		handleUser(client, command.second);
+		handleUser(client, command);
 		return (true);
 	}
 	if (command.first == "QUIT")
 	{
-		handleQuit(client, command.second);
+		handleQuit(client, command);
 		return (false);
 	}
 	return (false);

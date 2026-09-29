@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "Commands.hpp"
 
 namespace Verify
 {
@@ -39,31 +40,6 @@ namespace Verify
 		}
 		return (RETURN_OK);
 	}
-
-	bool parseUserParameters(const string &parameters, string &username,
-							 string &realName)
-	{
-		size_t first = parameters.find(' ');
-		if (first == string::npos || first == 0)
-			return (false);
-
-		size_t second = parameters.find(' ', first + 1);
-		if (second == string::npos || second == first + 1)
-			return (false);
-
-		size_t third = parameters.find(' ', second + 1);
-		if (third == string::npos || third == second + 1)
-			return (false);
-
-		size_t colon = parameters.find(':', third + 1);
-		if (colon == string::npos || colon + 1 >= parameters.size())
-			return (false);
-
-		username = parameters.substr(0, first);
-		realName = parameters.substr(colon + 1);
-		return (true);
-	}
-
 }
 
 void Server::sendNumericReply(Client &client, const string &code,
@@ -80,14 +56,16 @@ void Server::sendNumericReply(Client &client, const string &code,
 	send(client.getFd(), reply.c_str(), reply.length(), 0);
 }
 
-void Server::handlePass(Client &client, const string &parameters)
+void Server::handlePass(Client &client, const CommandPairVector &command)
 {
 	if (client.isRegistered())
 	{
 		sendNumericReply(client, "462", ":You may not reregister");
 		return;
 	}
-	if (Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
+	string parameters = Commands::getParam(command, PP_PASSWORD);
+	if (Commands::hasParam(command, PP_UNKNOWN)
+		|| Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
 		return;
@@ -107,10 +85,11 @@ void Server::handlePass(Client &client, const string &parameters)
 	}
 }
 
-void Server::handleNick(Client &client, const string &parameters)
+void Server::handleNick(Client &client, const CommandPairVector &command)
 {
-	string nickname = parameters;
-	if (Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
+	string nickname = Commands::getParam(command, PP_NICK);
+	if (Commands::hasParam(command, PP_UNKNOWN)
+		|| Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
 	{
 		string value = nickname.empty() ? "*" : nickname;
 		sendNumericReply(client, "432", value + " :Erroneous nickname");
@@ -138,16 +117,26 @@ void Server::handleNick(Client &client, const string &parameters)
 	}
 }
 
-void Server::handleUser(Client &client, const string &parameters)
+void Server::handleUser(Client &client, const CommandPairVector &command)
 {
 	if (client.isRegistered())
 	{
 		sendNumericReply(client, "462", ":You may not reregister");
 		return;
 	}
-	string username;
-	string realName;
-	if (!Verify::parseUserParameters(parameters, username, realName) || Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK || Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
+	if (!Commands::hasParam(command, PP_USER)
+		|| !Commands::hasParam(command, PP_USER_MODE)
+		|| !Commands::hasParam(command, PP_UNUSED)
+		|| !Commands::hasParam(command, PP_REALNAME)
+		|| Commands::hasParam(command, PP_UNKNOWN))
+	{
+		sendNumericReply(client, "461", "USER :Not enough parameters");
+		return;
+	}
+	string username = Commands::getParam(command, PP_USER);
+	string realName = Commands::getParam(command, PP_REALNAME);
+	if (Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK
+		|| Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;
@@ -163,11 +152,11 @@ void Server::handleUser(Client &client, const string &parameters)
 	}
 }
 
-void Server::handleQuit(Client &client, const string &parameters)
+void Server::handleQuit(Client &client, const CommandPairVector &command)
 {
-	string reason = parameters;
-	if (!reason.empty() && reason[0] == ':')
-		reason.erase(0, 1);
+	string reason = Commands::getParam(command, PP_REASON);
+	if (reason.empty())
+		reason = Commands::getParam(command, PP_UNKNOWN);
 	if (reason.empty())
 		reason = "Client quit";
 

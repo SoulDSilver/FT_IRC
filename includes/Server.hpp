@@ -28,11 +28,11 @@ class Server
     void addNewClient();
     void handleClientData(int client_fd);
     void removeClients(int client_fd);
-    bool dispatchCommand(Client &client, const pair<string, string> &command);
-    void handlePass(Client &client, const string &parameters);
-    void handleNick(Client &client, const string &parameters);
-    void handleUser(Client &client, const string &parameters);
-    void handleQuit(Client &client, const string &parameters);
+    bool dispatchCommand(Client &client, const CommandPairVector &command);
+    void handlePass(Client &client, const CommandPairVector &command);
+    void handleNick(Client &client, const CommandPairVector &command);
+    void handleUser(Client &client, const CommandPairVector &command);
+    void handleQuit(Client &client, const CommandPairVector &command);
     void sendNumericReply(Client &client, const string &code, const string &parameters);
 
   public:
