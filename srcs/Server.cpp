@@ -177,6 +177,14 @@ void Server::addNewClient()
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
 
+bool Server::checkClientRegistered(Client &client)
+{
+	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false)
+		return true;
+	return false;
+
+}
+
 bool Server::dispatchCommand(Client &client, const pair<string, string> &command)
 {
 	if (command.first == "PASS")

@@ -7,7 +7,7 @@ namespace Verify
 		RETURN_OK = 0,
 		RETURN_EMPTY,
 		RETURN_TOO_LONG,
-		RETURN_FORBIDDEN_CHAR
+		RETURN_FORBIDDEN_CHAR,
 	};
 
 	ReturnError checkError(const string &value, size_t maxLength)
@@ -82,6 +82,11 @@ void Server::sendNumericReply(Client &client, const string &code,
 
 void Server::handlePass(Client &client, const string &parameters)
 {
+	if (client.isRegistered())
+	{
+		sendNumericReply(client, "462", ":You may not reregister");
+		return;
+	}
 	if (Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
@@ -94,6 +99,12 @@ void Server::handlePass(Client &client, const string &parameters)
 	}
 
 	client.setPasswordAccepted();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
 void Server::handleNick(Client &client, const string &parameters)
@@ -119,10 +130,21 @@ void Server::handleNick(Client &client, const string &parameters)
 
 	client.setNick(nickname);
 	client.setHasNick();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
 void Server::handleUser(Client &client, const string &parameters)
 {
+	if (client.isRegistered())
+	{
+		sendNumericReply(client, "462", ":You may not reregister");
+		return;
+	}
 	string username;
 	string realName;
 	if (!Verify::parseUserParameters(parameters, username, realName) || Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK || Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
@@ -130,10 +152,15 @@ void Server::handleUser(Client &client, const string &parameters)
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;
 	}
-
 	client.setUsername(username);
 	client.setRealName(realName);
 	client.setHasUsername();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
 void Server::handleQuit(Client &client, const string &parameters)

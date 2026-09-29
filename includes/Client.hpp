@@ -14,6 +14,7 @@ class Client
 	bool PasswordAccepted;
 	bool HasNick;
 	bool HasUsername;
+	bool Registered;
 	
 public:
 	Client();
@@ -23,20 +24,31 @@ public:
 
 	int getFd() const;
     void setFd(int fd);
+
     const string &getIpAddr() const;
     void setIpAddr(const string &ipAddr);
+
 	const string &getUsername() const;
+    void setUsername(const string &username);
+
 	string getNick() const;
 	void setNick(const string &nick);
-    void setUsername(const string &username);
+
     void setRealName(const string &realName);
     const string &getRealName() const;
+
     void setHasUsername();
     bool hasUsername() const;
+
     void setPasswordAccepted();
     bool isPasswordAccepted() const;
+
     void setHasNick();
     bool hasNick() const;
+
+	void setRegistered();
+	bool isRegistered() const;
+
     void appendInput(const string &data);
     const string &getInbuff() const;
     bool extractLine(string &line);

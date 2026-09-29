@@ -47,4 +47,5 @@ class Server
  
 	int getListenPort() const;
 	int getListenFd() const;
+	bool checkClientRegistered(Client &client);
 };
