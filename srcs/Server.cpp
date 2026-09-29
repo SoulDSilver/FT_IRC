@@ -216,9 +216,28 @@ void Server::handleClientData(int fd)
 	{ //-> print the received data
 		// parser parte
 		string data(buff);
-		if (data.substr(0, 4) == "JOIN")
+		vector<string> dt;
+		size_t start = 0;
+		size_t pos = data.find(' ', start);
+		while(pos != string::npos){
+			dt.push_back(data.substr(start, pos - start));
+			start = pos + 1;
+			pos = data.find(' ', start);
+		}
+		dt.push_back(data.substr(start));
+		dt.back().erase(remove(dt.back().begin(), dt.back().end(), '\r'), dt.back().end());
+		dt.back().erase(remove(dt.back().begin(), dt.back().end(), '\n'), dt.back().end());
+		
+		for (size_t i = 0; i < dt.size(); i++){
+    		cout << i << " - " << dt[i] << " size: " << dt[i].size() << endl;
+		}
+		string command = dt[0];
+		for (size_t i = 0; i < command.size(); i++)
+    		command[i] = toupper(command[i]);
+
+		if (command == "JOIN")
 		{
-			string channelName = data.substr(5);
+			string channelName = dt[1];
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
 			if (channels.count(channelName) == 0)
@@ -233,9 +252,9 @@ void Server::handleClientData(int fd)
 				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
 			}
 		}
-		else if (data.substr(0, 4) == "PART")
+		else if (command == "PART")
 		{
-			string channelName = data.substr(5);
+			string channelName = dt[1];
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
 			size_t reasonPosition = channelName.find(" :");
@@ -256,14 +275,12 @@ void Server::handleClientData(int fd)
 			}
 
 		}
-		if (data.substr(0, 7) == "PRIVMSG")
+		if (command == "PRIVMSG")
 		{
-			size_t pos = data.find(" ");
-			if (pos != string::npos)
-			{
-				string target = data.substr(pos + 1, data.find(" ", pos + 1) - pos - 1);
+			
+				string target = dt[1];
 				cout << GRE << "target" << target << WHI << endl;
-				string message = data.substr(data.find(":", pos) + 1);
+				string message = dt[2];
 				message.erase(remove(message.begin(), message.end(), '\r'), message.end());
 				message.erase(remove(message.begin(), message.end(), '\n'), message.end());
 				if (channels.count(target) == 1)
@@ -271,27 +288,11 @@ void Server::handleClientData(int fd)
 					if (isClientInChannel(target, fd))
 						channels.at(target).broadcastMessage(message, fd);
 				}
-			}
+			
 		}
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 		//verificando se esta vazio
-		
-		vector<string> dt;
-		size_t start = 0;
-		size_t pos = data.find(' ', start);
-		while(pos != string::npos){
-			dt.push_back(data.substr(start, pos - start));
-			start = pos + 1;
-			pos = data.find(' ', start);
-		}
-		dt.push_back(data.substr(start, data.size() - start - 2));
-		for (size_t i = 0; i < dt.size(); i++){
-    		cout << i << " - " << dt[i] << endl;
-		}
-		string command = dt[0];
-		for (size_t i = 0; i < command.size(); i++)
-    		command[i] = toupper(command[i]);
 
 		if(command == "TOPIC"){
 			if(dt.size() == 2){
@@ -302,6 +303,8 @@ void Server::handleClientData(int fd)
 				}
 			}
 		}
+
+		if()
 
 	}
 }
