@@ -2,65 +2,77 @@
 
 namespace Verify
 {
-bool compareWithStrcmp(const string &provided, const string &expected)
-{
-	return (strcmp(provided.c_str(), expected.c_str()) == 0);
-}
-bool constantTimeEquals(const string &provided, const string &expected)
-{
-	size_t maxLength = provided.size() > expected.size()
-		? provided.size() : expected.size();
-	volatile unsigned char difference = 0;
-
-	for (size_t i = 0; i < maxLength; i++)
+	enum ReturnError
 	{
-		unsigned char providedChar = 0;
-		unsigned char expectedChar = 0;
-		if (i < provided.size())
-			providedChar = static_cast<unsigned char>(provided[i]);
-		if (i < expected.size())
-			expectedChar = static_cast<unsigned char>(expected[i]);
-		difference |= static_cast<unsigned char>(providedChar ^ expectedChar);
+		RETURN_OK = 0,
+		RETURN_EMPTY,
+		RETURN_TOO_LONG,
+		RETURN_FORBIDDEN_CHAR
+	};
+
+	ReturnError checkError(const string &value, size_t maxLength)
+	{
+		if (value.empty())
+			return (RETURN_EMPTY);
+		if (value.size() > maxLength)
+			return (RETURN_TOO_LONG);
+		if (value.find_first_of(" \t\r\n:") != string::npos)
+			return (RETURN_FORBIDDEN_CHAR);
+		for (size_t i = 0; i < value.size(); i++)
+		{
+			if (iscntrl(static_cast<unsigned char>(value[i])))
+				return (RETURN_FORBIDDEN_CHAR);
+		}
+		return (RETURN_OK);
 	}
-	if (provided.size() != expected.size())
-		difference |= 1;
-	return (difference == 0);
-}
 
-bool parseUserParameters(const string &parameters, string &username,
-	string &realName)
-{
-	size_t first = parameters.find(' ');
-	if (first == string::npos || first == 0)
-		return (false);
+	ReturnError checkText(const string &value, size_t maxLength)
+	{
+		if (value.empty())
+			return (RETURN_EMPTY);
+		if (value.size() > maxLength)
+			return (RETURN_TOO_LONG);
+		for (size_t i = 0; i < value.size(); i++)
+		{
+			if (iscntrl(static_cast<unsigned char>(value[i])))
+				return (RETURN_FORBIDDEN_CHAR);
+		}
+		return (RETURN_OK);
+	}
 
-	size_t second = parameters.find(' ', first + 1);
-	if (second == string::npos || second == first + 1)
-		return (false);
+	bool parseUserParameters(const string &parameters, string &username,
+							 string &realName)
+	{
+		size_t first = parameters.find(' ');
+		if (first == string::npos || first == 0)
+			return (false);
 
-	size_t third = parameters.find(' ', second + 1);
-	if (third == string::npos || third == second + 1)
-		return (false);
+		size_t second = parameters.find(' ', first + 1);
+		if (second == string::npos || second == first + 1)
+			return (false);
 
-	size_t colon = parameters.find(':', third + 1);
-	if (colon == string::npos || colon + 1 >= parameters.size())
-		return (false);
+		size_t third = parameters.find(' ', second + 1);
+		if (third == string::npos || third == second + 1)
+			return (false);
 
-	username = parameters.substr(0, first);
-	realName = parameters.substr(colon + 1);
-	return (!username.empty()
-		&& username.find_first_of(" \t\r\n:") == string::npos);
-}
+		size_t colon = parameters.find(':', third + 1);
+		if (colon == string::npos || colon + 1 >= parameters.size())
+			return (false);
+
+		username = parameters.substr(0, first);
+		realName = parameters.substr(colon + 1);
+		return (true);
+	}
 
 }
 
 void Server::sendNumericReply(Client &client, const string &code,
-	const string &parameters)
+							  const string &parameters)
 {
 	string nickname = client.getNick();
 	if (nickname.empty())
 		nickname = "*";
-
+	// ex::irc.example.com 461 * PASS :Not enough parameters
 	string reply = ":" + Name + " " + code + " " + nickname;
 	if (!parameters.empty())
 		reply += " " + parameters;
@@ -70,12 +82,12 @@ void Server::sendNumericReply(Client &client, const string &code,
 
 void Server::handlePass(Client &client, const string &parameters)
 {
-	if (parameters.empty())
+	if (Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (!Verify::compareWithStrcmp(parameters, Password))
+	if (Password != parameters)
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
 		return;
@@ -87,14 +99,7 @@ void Server::handlePass(Client &client, const string &parameters)
 void Server::handleNick(Client &client, const string &parameters)
 {
 	string nickname = parameters;
-	bool valid = !nickname.empty()
-		&& nickname.find_first_of(" \t\r\n:") == string::npos;
-	for (size_t i = 0; i < nickname.size(); i++)
-	{
-		if (iscntrl(static_cast<unsigned char>(nickname[i])))
-			valid = false;
-	}
-	if (!valid)
+	if (Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
 	{
 		string value = nickname.empty() ? "*" : nickname;
 		sendNumericReply(client, "432", value + " :Erroneous nickname");
@@ -102,12 +107,12 @@ void Server::handleNick(Client &client, const string &parameters)
 	}
 
 	for (map<int, Client>::const_iterator it = Clients.begin();
-		it != Clients.end(); ++it)
+		 it != Clients.end(); ++it)
 	{
 		if (it->first != client.getFd() && it->second.getNick() == nickname)
 		{
 			sendNumericReply(client, "433",
-				nickname + " :Nickname is already in use");
+							 nickname + " :Nickname is already in use");
 			return;
 		}
 	}
@@ -120,7 +125,7 @@ void Server::handleUser(Client &client, const string &parameters)
 {
 	string username;
 	string realName;
-	if (!Verify::parseUserParameters(parameters, username, realName))
+	if (!Verify::parseUserParameters(parameters, username, realName) || Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK || Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;

@@ -1,19 +1,19 @@
 #include "Client.hpp"
 
-Client::Client() : Fd(-1), IpAddr(""), Username(""), RealName(""),
+Client::Client() : Fd(-1), Inbuff(""), IpAddr(""), Nick(""),  Username(""), RealName(""),
     PasswordAccepted(false), HasNick(false), HasUsername(false) {}
 
 Client::Client(const Client &other)
-    : Fd(other.Fd), IpAddr(other.IpAddr), Username(other.Username),
-    RealName(other.RealName), PasswordAccepted(other.PasswordAccepted),
-    HasNick(other.HasNick), HasUsername(other.HasUsername) {}
+    : Fd(other.Fd), Inbuff(other.Inbuff), IpAddr(other.IpAddr), Nick(other.Nick),  Username(other.Username), RealName(other.RealName), PasswordAccepted(other.PasswordAccepted), HasNick(other.HasNick), HasUsername(other.HasUsername) {}
 
 Client &Client::operator=(const Client &other)
 {
     if (this != &other)
     {
         Fd = other.Fd;
+        Inbuff = other.Inbuff;
         IpAddr = other.IpAddr;
+        Nick = other.Nick;
         Username = other.Username;
         RealName = other.RealName;
         PasswordAccepted = other.PasswordAccepted;

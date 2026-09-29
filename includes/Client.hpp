@@ -7,7 +7,6 @@ class Client
   private:
 	int Fd;
 	string Inbuff;
-	string Outbuff;
 	string IpAddr;
 	string Nick;
 	string Username;

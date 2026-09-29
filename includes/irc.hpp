@@ -27,6 +27,11 @@
 #define GRE "\e[1;32m" //-> for green color
 #define YEL "\e[1;33m" //-> for yellow color
 
+#define MAX_NICK_LEN 30
+#define MAX_USER_LEN 30
+#define MAX_REAL_LEN 255
+#define MAX_PASS_LEN 128
+
 
 using namespace std;
 
