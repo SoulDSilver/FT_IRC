@@ -4,13 +4,18 @@
 Channel::Channel(const string &name, Server &server,
 				 const Client &client) : server(server)
 {
-	this->name = name;
+	settings.insert(make_pair("Name", name));
+	settings.insert(make_pair("Password", ""));
+	settings.insert(make_pair("Topic", ""));
+	
+	settings.insert(make_pair("Permission", "Public"));
+	settings.insert(make_pair("Name", name));
 	this->clients.insert(make_pair(client.getFd(), client));
 	this->operators.insert(make_pair(client.getFd(), client));
 }
 
 Channel::Channel(const Channel &other)
-	: name(other.name), server(other.server),
+	: settings(other.settings), server(other.server),
 	  clients(other.clients), operators(other.operators)
 {
 }
@@ -19,7 +24,7 @@ Channel &Channel::operator=(const Channel &other)
 {
 	if (this != &other)
 	{
-		name = other.name;
+		settings = other.settings;
 		clients = other.clients;
 	}
 	return (*this);
@@ -27,7 +32,8 @@ Channel &Channel::operator=(const Channel &other)
 
 bool Channel::operator==(const Channel &other)
 {
-	return (this->name == other.name);
+	return (this->settings.find("Name") != this->settings.end() &&
+			this->settings.at("Name") == other.settings.at("Name"));
 }
 
 Channel::~Channel()
@@ -36,12 +42,12 @@ Channel::~Channel()
 
 const string &Channel::getName() const
 {
-	return (name);
+	return (settings.at("Name"));
 }
 
 const string &Channel::getPassword() const
 {
-	return (password);
+	return (settings.at("Password"));
 }
 
 const map<int, Client> &Channel::getClients() const

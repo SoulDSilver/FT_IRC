@@ -8,12 +8,15 @@ class Server;
 class Channel
 {
 private:
-    string name;
-    string password;
     Server &server;
+    int Limit;
+    bool InviteOnly;
+    bool OnlyOperators;
+    bool TopicRestricted;
+
     map<int, Client> clients;
     map<int, Client> operators;
-    vector<string> settings;
+    map<string, string> settings;
     vector<int> invitedUsers;
 
 public:
