@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), ipAddr(""), username(""), realName(""), passwordAccepted(false), hasNick(false), hasUsername(false) {}
+Client::Client() : fd(-1), ipAddr(""), username(""), realName(""), passwordAccepted(false), hasNick(false), isWelcome(false), hasUsername(false) {}
 
 Client::Client(const Client &other)
 {
@@ -45,6 +45,17 @@ const string &Client::getIpAddr() const
 {
     return ipAddr;
 }
+
+bool Client::hasWelcome() const
+{
+    return isWelcome;
+}
+
+void Client::setWelcome()
+{
+   isWelcome = true;
+}
+
 void Client::setIpAddr(const string &ipAddr)
 {
     this->ipAddr = ipAddr;
@@ -125,6 +136,8 @@ bool Client::extractLine(string &line)
     this->inbuff.erase(0, end + 1);
     return (true);
 }
+
+
 
 ostream &operator<<(ostream &stream, const Client &cl)
 {

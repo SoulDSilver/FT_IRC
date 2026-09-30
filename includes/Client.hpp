@@ -10,11 +10,14 @@ private:
 	string inbuff;
 	string outbuff;
 	string ipAddr;
+	string hostname;
 	string nick;
 	string username;
 	string realName;
 	bool passwordAccepted;
 	bool hasNick;
+	bool isWelcome;
+	bool hasHostname;
 	bool hasUsername;
 
 public:
@@ -39,6 +42,8 @@ public:
 	void setPasswordAccepted();
 	bool hasNickSet() const;
 	void setHasNick();
+	bool hasWelcome() const;
+	void setWelcome();
 	bool hasUsernameSet() const;
 	void setHasUsername();
 
