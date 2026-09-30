@@ -10,25 +10,18 @@ class Channel;
 class Commands
 {
     private:
-        string command;
-        string parameters;
-        string prefix;
-
-    public:
         Commands();
-        Commands(const string& command, const string& parameters, const string& prefix)
-            : command(command), parameters(parameters), prefix(prefix) {}
         Commands(const Commands& other);
         Commands& operator=(const Commands& other);
         ~Commands();
-        void TOPIC(Channel& channel, const string& topic);
-        void MODE( Channel& channel, const string& mode);
-        void JOIN( Channel& channel, const Client& client);
-        void INVITE( Channel& channel, const Client& target);
-        void PART( Channel& channel, const Client& client);
-        void PRIVMSG(const Client& sender, const Client& target, const string& message);
-        void KICK( Channel& channel, const Client& client, const string& reason);
-        const string& getCommand() const { return command; }
-        const string& getParameters() const { return parameters; }
-        const string& getPrefix() const { return prefix; }
+        
+    public:
+        static void TOPIC(Channel& channel, const string& topic);
+        static void MODE( Channel& channel, const string& mode);
+        static void JOIN( Channel& channel, const Client& client);
+        static void INVITE( Channel& channel, const Client& target);
+        static void PART( Channel& channel, const Client& client);
+        static void PRIVMSG(const map<string, Channel>& channels, const string& target, const string& message, int fd,  bool isClientInChannel);
+        static void KICK( Channel& channel, const Client& client, const string& reason);
+        static void PING( int fd, const string& serverName);
 };

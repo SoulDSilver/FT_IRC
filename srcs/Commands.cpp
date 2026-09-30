@@ -1,19 +1,13 @@
 #include "Commands.hpp"
 
-Commands::Commands() : command(""), parameters(""), prefix("") {}
+void Commands::PING(int fd, const string& serverName){}
 
-Commands::Commands(const Commands &other)
-    : command(other.command), parameters(other.parameters), prefix(other.prefix) {}
-
-Commands &Commands::operator=(const Commands &other)
-{
-    if (this != &other)
-    {
-        command = other.command;
-        parameters = other.parameters;
-        prefix = other.prefix;
-    }
-    return *this;
+void Commands::PRIVMSG(const map<string, Channel>& channels, const string& target, const string& message, int fd, bool isClientInChannel){
+	cout << GRE << "target" << target << WHI << endl;
+	if (channels.count(target) == 1)
+	{
+		if (isClientInChannel)
+			channels.at(target).broadcastMessage(message, fd);
+	}
 }
-
-Commands::~Commands() {}
+        

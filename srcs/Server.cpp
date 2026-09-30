@@ -108,6 +108,17 @@ void Server::removeChannel(const string &channelname)
 	cout << channelname << " have been erase!" << endl;
 }
 
+void Server::pongmessage(int fd, const string &a)
+{
+	string retorno;
+
+	if (!a.empty())
+	{
+		retorno = "PONG " + a + "\r\n";
+		send(fd, retorno.c_str(), retorno.size(), 0);
+	}
+}
+
 void Server::create_socket()
 {
 	int yes;
@@ -229,15 +240,36 @@ void Server::handleClientData(int fd)
 		dt.back().erase(remove(dt.back().begin(), dt.back().end(), '\n'), dt.back().end());
 		
 		for (size_t i = 0; i < dt.size(); i++){
-    		cout << i << " - " << dt[i] << " size: " << dt[i].size() << endl;
+			if (!dt[i].empty() && dt[i][0] == ':' && i > 0) {
+				dt[i].erase(0, 1);
+				size_t j = i + 1;
+				while(j < dt.size()){
+					dt[i] += " " + dt[j]; 
+					dt.erase(dt.begin() + j);
+					j++;
+				}
+				i += j; 
+			}
+		}
+
+		for (size_t i = 0; i < dt.size(); i++){
+			cout << i << " - " << dt[i] << " size: " << dt[i].size() << endl;
 		}
 		string command = dt[0];
 		for (size_t i = 0; i < command.size(); i++)
     		command[i] = toupper(command[i]);
 
+		if (command == "PING")
+		{
+			string serverName = dt[1];
+			if (!serverName.empty())
+				pongmessage(fd, serverName);
+		}
+
 		if (command == "JOIN")
 		{
 			string channelName = dt[1];
+			
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
 			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
 			if (channels.count(channelName) == 0)
@@ -277,23 +309,8 @@ void Server::handleClientData(int fd)
 		}
 		if (command == "PRIVMSG")
 		{
-			
-				string target = dt[1];
-				cout << GRE << "target" << target << WHI << endl;
-				string message = dt[2];
-				message.erase(remove(message.begin(), message.end(), '\r'), message.end());
-				message.erase(remove(message.begin(), message.end(), '\n'), message.end());
-				if (channels.count(target) == 1)
-				{
-					if (isClientInChannel(target, fd))
-						channels.at(target).broadcastMessage(message, fd);
-				}
-			
+			Commands::PRIVMSG(channels, dt[1], dt[2], fd, isClientInChannel(dt[1], fd));			
 		}
-		buff[bytes] = '\0';
-		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		//verificando se esta vazio
-
 		if(command == "TOPIC"){
 			if(dt.size() == 2){
 				string target = dt[1];
@@ -304,8 +321,10 @@ void Server::handleClientData(int fd)
 			}
 		}
 
-		if()
 
+		buff[bytes] = '\0';
+		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
+		//verificando se esta vazio
 	}
 }
 

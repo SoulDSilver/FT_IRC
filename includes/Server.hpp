@@ -4,6 +4,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Commands.hpp"
 
 #define MAXPENDCONN 10
 
@@ -29,7 +30,7 @@ class Server
     void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
-
+	void pongmessage(int fd, const string &a);
 	void removeChannel(const string &channelname);
 
   public:
