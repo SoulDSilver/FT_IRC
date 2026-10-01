@@ -1,57 +1,45 @@
 #include "Server.hpp"
+#include "Commands.hpp"
 
 namespace Verify
 {
-	bool compareWithStrcmp(const string &provided, const string &expected)
+	enum ReturnError
 	{
-		return (strcmp(provided.c_str(), expected.c_str()) == 0);
-	}
-	bool constantTimeEquals(const string &provided, const string &expected)
-	{
-		size_t maxLength = provided.size() > expected.size()
-							   ? provided.size()
-							   : expected.size();
-		volatile unsigned char difference = 0;
+		RETURN_OK = 0,
+		RETURN_EMPTY,
+		RETURN_TOO_LONG,
+		RETURN_FORBIDDEN_CHAR,
+	};
 
-		for (size_t i = 0; i < maxLength; i++)
+	ReturnError checkError(const string &value, size_t maxLength)
+	{
+		if (value.empty())
+			return (RETURN_EMPTY);
+		if (value.size() > maxLength)
+			return (RETURN_TOO_LONG);
+		if (value.find_first_of(" \t\r\n:") != string::npos)
+			return (RETURN_FORBIDDEN_CHAR);
+		for (size_t i = 0; i < value.size(); i++)
 		{
-			unsigned char providedChar = 0;
-			unsigned char expectedChar = 0;
-			if (i < provided.size())
-				providedChar = static_cast<unsigned char>(provided[i]);
-			if (i < expected.size())
-				expectedChar = static_cast<unsigned char>(expected[i]);
-			difference |= static_cast<unsigned char>(providedChar ^ expectedChar);
+			if (iscntrl(static_cast<unsigned char>(value[i])))
+				return (RETURN_FORBIDDEN_CHAR);
 		}
-		if (provided.size() != expected.size())
-			difference |= 1;
-		return (difference == 0);
+		return (RETURN_OK);
 	}
 
-	bool parseUserParameters(const string &parameters, string &username,
-							 string &realName)
+	ReturnError checkText(const string &value, size_t maxLength)
 	{
-		size_t first = parameters.find(' ');
-		if (first == string::npos || first == 0)
-			return (false);
-
-		size_t second = parameters.find(' ', first + 1);
-		if (second == string::npos || second == first + 1)
-			return (false);
-
-		size_t third = parameters.find(' ', second + 1);
-		if (third == string::npos || third == second + 1)
-			return (false);
-
-		size_t colon = parameters.find(':', third + 1);
-		if (colon == string::npos || colon + 1 >= parameters.size())
-			return (false);
-
-		username = parameters.substr(0, first);
-		realName = parameters.substr(colon + 1);
-		return (!username.empty() && username.find_first_of(" \t\r\n:") == string::npos);
+		if (value.empty())
+			return (RETURN_EMPTY);
+		if (value.size() > maxLength)
+			return (RETURN_TOO_LONG);
+		for (size_t i = 0; i < value.size(); i++)
+		{
+			if (iscntrl(static_cast<unsigned char>(value[i])))
+				return (RETURN_FORBIDDEN_CHAR);
+		}
+		return (RETURN_OK);
 	}
-
 }
 
 void Server::sendNumericReply(Client &client, const string &code,
@@ -60,48 +48,56 @@ void Server::sendNumericReply(Client &client, const string &code,
 	string nickname = client.getNick();
 	if (nickname.empty())
 		nickname = "*";
-
-	string reply = ":" + name + " " + code + " " + nickname;
+	// ex::irc.example.com 461 * PASS :Not enough parameters
+	string reply = ":" + Name + " " + code + " " + nickname;
 	if (!parameters.empty())
 		reply += " " + parameters;
 	reply += "\r\n";
 	send(client.getFd(), reply.c_str(), reply.length(), 0);
 }
 
-void Server::handlePass(Client &client, const string &parameters)
+void Server::handlePass(Client &client, const CommandPairVector &command)
 {
-	if (parameters.empty())
+	if (client.isRegistered())
+	{
+		sendNumericReply(client, "462", ":You may not reregister");
+		return;
+	}
+	string parameters = Commands::getParam(command, PP_PASSWORD);
+	if (Commands::hasParam(command, PP_UNKNOWN)
+		|| Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (!Verify::compareWithStrcmp(parameters, password))
+	if (Password != parameters)
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
 		return;
 	}
 
 	client.setPasswordAccepted();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
-void Server::handleNick(Client &client, const string &parameters)
+void Server::handleNick(Client &client, const CommandPairVector &command)
 {
-	string nickname = parameters;
-	bool valid = !nickname.empty() && nickname.find_first_of(" \t\r\n:") == string::npos;
-	for (size_t i = 0; i < nickname.size(); i++)
-	{
-		if (iscntrl(static_cast<unsigned char>(nickname[i])))
-			valid = false;
-	}
-	if (!valid)
+	string nickname = Commands::getParam(command, PP_NICK);
+	if (Commands::hasParam(command, PP_UNKNOWN)
+		|| Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
 	{
 		string value = nickname.empty() ? "*" : nickname;
 		sendNumericReply(client, "432", value + " :Erroneous nickname");
 		return;
 	}
 
-	for (map<int, Client>::const_iterator it = clients.begin();
-		 it != clients.end(); ++it)
+	for (map<int, Client>::const_iterator it = Clients.begin();
+		 it != Clients.end(); ++it)
 	{
 		if (it->first != client.getFd() && it->second.getNick() == nickname)
 		{
@@ -113,28 +109,54 @@ void Server::handleNick(Client &client, const string &parameters)
 
 	client.setNick(nickname);
 	client.setHasNick();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
-void Server::handleUser(Client &client, const string &parameters)
+void Server::handleUser(Client &client, const CommandPairVector &command)
 {
-	string username;
-	string realName;
-	if (!Verify::parseUserParameters(parameters, username, realName))
+	if (client.isRegistered())
+	{
+		sendNumericReply(client, "462", ":You may not reregister");
+		return;
+	}
+	if (!Commands::hasParam(command, PP_USER)
+		|| !Commands::hasParam(command, PP_USER_MODE)
+		|| !Commands::hasParam(command, PP_UNUSED)
+		|| !Commands::hasParam(command, PP_REALNAME)
+		|| Commands::hasParam(command, PP_UNKNOWN))
 	{
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;
 	}
-
+	string username = Commands::getParam(command, PP_USER);
+	string realName = Commands::getParam(command, PP_REALNAME);
+	if (Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK
+		|| Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
+	{
+		sendNumericReply(client, "461", "USER :Not enough parameters");
+		return;
+	}
 	client.setUsername(username);
 	client.setRealName(realName);
 	client.setHasUsername();
+	if (checkClientRegistered(client) == true)
+	{
+		client.setRegistered();
+		if (client.isRegistered())
+			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+	}
 }
 
-void Server::handleQuit(Client &client, const string &parameters)
+void Server::handleQuit(Client &client, const CommandPairVector &command)
 {
-	string reason = parameters;
-	if (!reason.empty() && reason[0] == ':')
-		reason.erase(0, 1);
+	string reason = Commands::getParam(command, PP_REASON);
+	if (reason.empty())
+		reason = Commands::getParam(command, PP_UNKNOWN);
 	if (reason.empty())
 		reason = "Client quit";
 
