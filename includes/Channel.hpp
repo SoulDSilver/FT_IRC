@@ -8,7 +8,9 @@ class Server;
 class Channel
 {
 private:
+    map<string, string> settings;
     Server &server;
+
     int Limit;
     bool InviteOnly;
     bool OnlyOperators;
@@ -16,7 +18,7 @@ private:
 
     map<int, Client> clients;
     map<int, Client> operators;
-    map<string, string> settings;
+
     vector<int> invitedUsers;
 
 public:

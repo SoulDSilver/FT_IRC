@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "Commands.hpp"
+#include "Parser.hpp"
 
 Server::Server() : listen_port(0), password(""), listen_fd(-1)
 {
@@ -99,7 +99,6 @@ void Server::welcomeMessage(Client &client)
 
 	welcomeMsg = ":" + this->getName() + " 001 " + client.getNick() + " :Welcome to the IRC server, " + client.getNick() + "!\r\n";
 	send(client.getFd(), welcomeMsg.c_str(), welcomeMsg.length(), 0);
-	client.setWelcome();
 }
 
 void Server::pongmessage(int fd, const string &a)
@@ -128,12 +127,10 @@ bool Server::isClientInChannel(const string &channelName, int client_fd) const
 
 bool Server::checkClientRegistered(Client &client)
 {
-        if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false)
-                return true;
-        return false;
-
+	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false)
+		return true;
+	return false;
 }
-
 
 void Server::removeChannel(const string &channelname)
 {
@@ -239,8 +236,6 @@ void Server::handleClientData(int fd)
 		map<int, Client>::iterator client = this->clients.find(fd);
 		if (client == this->clients.end())
 			return;
-		if(!client->second.hasWelcome())
-			welcomeMessage(client->second);
 		string data(buff);
 		if (data.compare(0, 4, "PING") == 0)
 		{
@@ -258,19 +253,18 @@ void Server::handleClientData(int fd)
 		client->second.appendInput(cca);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << cca << endl;
 
-        while (client->second.extractLine(line))
-        {
-                CommandList parsed;
-                if (!Commands::parse(line, parsed))
-                        continue;
-                for (CommandList::iterator it = parsed.begin();
-                        it != parsed.end(); ++it)
-                {
-                        if (!dispatchCommand(client->second, *it))
-                                return;
-                }
-        }
-
+		while (client->second.extractLine(line))
+		{
+			CommandList parsed;
+			if (!Parser::parse(line, parsed))
+				continue;
+			for (CommandList::iterator it = parsed.begin();
+				 it != parsed.end(); ++it)
+			{
+				if (!dispatchCommand(client->second, *it))
+					return;
+			}
+		}
 
 		/*================================================================================*/
 		if (data.substr(0, 4) == "JOIN")
@@ -373,33 +367,27 @@ void Server::run()
 	cout << "The Server Closed!" << endl;
 }
 
-// typedef pair<int, string> CommandPair;
-// typedef pair<string, vector<CommandPair> > CommandPairVector;
-// typedef vector<CommandPairVector> CommandList;
-//
-
 bool Server::dispatchCommand(Client &client, const CommandPairVector &command)
 {
-        if (command.first == "PASS")
-        {
-                handlePass(client, command);
-                return (true);
-        }
-        if (command.first == "NICK")
-        {
-                handleNick(client, command);
-                return (true);
-        }
-        if (command.first == "USER")
-        {
-                handleUser(client, command);
-                return (true);
-        }
-        if (command.first == "QUIT")
-        {
-                handleQuit(client, command);
-                return (false);
-        }
-        return (false);
+	if (command.first == "PASS")
+	{
+		handlePass(client, command);
+		return (true);
+	}
+	if (command.first == "NICK")
+	{
+		handleNick(client, command);
+		return (true);
+	}
+	if (command.first == "USER")
+	{
+		handleUser(client, command);
+		return (true);
+	}
+	if (command.first == "QUIT")
+	{
+		handleQuit(client, command);
+		return (false);
+	}
+	return (false);
 }
-

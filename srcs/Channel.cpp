@@ -7,9 +7,13 @@ Channel::Channel(const string &name, Server &server,
 	settings.insert(make_pair("Name", name));
 	settings.insert(make_pair("Password", ""));
 	settings.insert(make_pair("Topic", ""));
-	
+
 	settings.insert(make_pair("Permission", "Public"));
-	
+
+	Limit = 0;
+	InviteOnly = false;
+	OnlyOperators = false;
+	TopicRestricted = false;
 	this->clients.insert(make_pair(client.getFd(), client));
 	this->operators.insert(make_pair(client.getFd(), client));
 }
@@ -120,10 +124,9 @@ void Channel::addSetting(const string &setting, const string &value)
 	settings.insert(make_pair(setting, value));
 }
 
-
 void Channel::removeSetting(const string &setting)
 {
-	if(settings.count(setting))
+	if (settings.count(setting))
 		settings.erase(setting);
 }
 
@@ -135,7 +138,7 @@ void Channel::addInvitedUser(int a)
 
 void Channel::removeInvitedUser(const int &a)
 {
-	vector<int>::iterator it =  find(invitedUsers.begin(), invitedUsers.end(), a);
+	vector<int>::iterator it = find(invitedUsers.begin(), invitedUsers.end(), a);
 	if (it != invitedUsers.end())
 		invitedUsers.erase(it);
 }

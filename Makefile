@@ -19,8 +19,8 @@ CYAN = \033[0;36m
 
 NAME = ircserv
 HEADERS = $(addprefix includes/, Channel.hpp Client.hpp Server.hpp \
-			irc.hpp Commands.hpp)
-SRCS =  $(addprefix srcs/, main.cpp Commands.cpp Channel.cpp Client.cpp \
+			irc.hpp Commands.hpp Parser.hpp)
+SRCS =  $(addprefix srcs/, main.cpp Commands.cpp Parser.cpp Channel.cpp Client.cpp \
 			Server.cpp commands_files/Registration.cpp \
 			commands_files/ChannelCommands.cpp \
 			commands_files/OperatorCommands.cpp \

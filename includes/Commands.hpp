@@ -31,7 +31,5 @@ class Commands
         const string& getCommand() const { return Command; }
         const string& getParameters() const { return Parameters; }
         const string& getPrefix() const { return Prefix; }
-        static bool parse(const string &line, CommandList &commands);
-        static bool hasParam(const CommandPairVector &command, ParsedParamId id);
-        static const string &getParam(const CommandPairVector &command, ParsedParamId id);
+       
 };

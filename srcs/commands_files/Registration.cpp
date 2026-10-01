@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "Commands.hpp"
+#include "Parser.hpp"
 
 namespace Verify
 {
@@ -49,7 +49,7 @@ void Server::sendNumericReply(Client &client, const string &code,
 	if (nickname.empty())
 		nickname = "*";
 	// ex::irc.example.com 461 * PASS :Not enough parameters
-	string reply = ":" + Name + " " + code + " " + nickname;
+	string reply = ":" + name + " " + code + " " + nickname;
 	if (!parameters.empty())
 		reply += " " + parameters;
 	reply += "\r\n";
@@ -63,14 +63,13 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 		sendNumericReply(client, "462", ":You may not reregister");
 		return;
 	}
-	string parameters = Commands::getParam(command, PP_PASSWORD);
-	if (Commands::hasParam(command, PP_UNKNOWN)
-		|| Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
+	string parameters = Parser::getParam(command, PP_PASSWORD);
+	if (Parser::hasParam(command, PP_UNKNOWN) || Verify::checkError(parameters, MAX_PASS_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (Password != parameters)
+	if (password != parameters)
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
 		return;
@@ -87,17 +86,16 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 
 void Server::handleNick(Client &client, const CommandPairVector &command)
 {
-	string nickname = Commands::getParam(command, PP_NICK);
-	if (Commands::hasParam(command, PP_UNKNOWN)
-		|| Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
+	string nickname = Parser::getParam(command, PP_NICK);
+	if (Parser::hasParam(command, PP_UNKNOWN) || Verify::checkError(nickname, MAX_NICK_LEN) != Verify::RETURN_OK)
 	{
 		string value = nickname.empty() ? "*" : nickname;
 		sendNumericReply(client, "432", value + " :Erroneous nickname");
 		return;
 	}
 
-	for (map<int, Client>::const_iterator it = Clients.begin();
-		 it != Clients.end(); ++it)
+	for (map<int, Client>::const_iterator it = clients.begin();
+		 it != clients.end(); ++it)
 	{
 		if (it->first != client.getFd() && it->second.getNick() == nickname)
 		{
@@ -124,19 +122,14 @@ void Server::handleUser(Client &client, const CommandPairVector &command)
 		sendNumericReply(client, "462", ":You may not reregister");
 		return;
 	}
-	if (!Commands::hasParam(command, PP_USER)
-		|| !Commands::hasParam(command, PP_USER_MODE)
-		|| !Commands::hasParam(command, PP_UNUSED)
-		|| !Commands::hasParam(command, PP_REALNAME)
-		|| Commands::hasParam(command, PP_UNKNOWN))
+	if (!Parser::hasParam(command, PP_USER) || !Parser::hasParam(command, PP_USER_MODE) || !Parser::hasParam(command, PP_UNUSED) || !Parser::hasParam(command, PP_REALNAME) || Parser::hasParam(command, PP_UNKNOWN))
 	{
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;
 	}
-	string username = Commands::getParam(command, PP_USER);
-	string realName = Commands::getParam(command, PP_REALNAME);
-	if (Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK
-		|| Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
+	string username = Parser::getParam(command, PP_USER);
+	string realName = Parser::getParam(command, PP_REALNAME);
+	if (Verify::checkError(username, MAX_USER_LEN) != Verify::RETURN_OK || Verify::checkText(realName, MAX_REAL_LEN) != Verify::RETURN_OK)
 	{
 		sendNumericReply(client, "461", "USER :Not enough parameters");
 		return;
@@ -154,9 +147,9 @@ void Server::handleUser(Client &client, const CommandPairVector &command)
 
 void Server::handleQuit(Client &client, const CommandPairVector &command)
 {
-	string reason = Commands::getParam(command, PP_REASON);
+	string reason = Parser::getParam(command, PP_REASON);
 	if (reason.empty())
-		reason = Commands::getParam(command, PP_UNKNOWN);
+		reason = Parser::getParam(command, PP_UNKNOWN);
 	if (reason.empty())
 		reason = "Client quit";
 
