@@ -234,7 +234,6 @@ void Server::handleClientData(int fd)
 	{
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
 		removeClients(fd);
-		close(fd);
 	}
 	else
 	{
