@@ -22,34 +22,41 @@ class Server
 	vector<struct pollfd> fds;
     map<int, Client> clients;
     map<string, Channel> channels;
-
-
-	void createChannel(const string &channelName, Client &client);
-    void addNewClient();
-    void handleClientData(int client_fd);
-    void removeClients(int client_fd);
-	void welcomeMessage(Client &client);
-	bool isClientInChannel(const string &channelName, int client_fd) const;
-	void pongmessage(int fd, const string &a);
-	void removeChannel(const string &channelname);
-
-  public:
+	
+public:
 	Server(int port, const string &password);
 	Server(const Server &other);
 	Server &operator=(const Server &other);
 	~Server();
-
+	
 	// importants methods
 	void run();
     static void signalHandler(int signum); //-> static method to handle signals
     void closeFds(); //-> method to close all the clients and the server socket
-
+	
 	// geters and setters
- 
+	
 	const string &getName() const;
 	const string &getPassword() const;
 	int getListenPort() const;
 	int getListenFd() const;
+	
+	// utils 
+	void createChannel(const string &channelName, int fd);
+    void addNewClient();
+    void handleClientData(int client_fd);
+    void removeClients(int client_fd);
+	void welcomeMessage(Client &client);
+	void pongmessage(int fd, const string &a);
+	void removeChannel(const string &channelname);
+
+	void addClientToChannel(const string &channelName, int fd);
+	void sendChannelJoinMessages(const string &channelName, int fd);
+	size_t channelExists(const string& channelName);
+	bool isClientInChannel(const string &channelName, int client_fd) const;
+    void broadcastToChannel(const string& channelName, const string& message, int fd);
+	void sendTopicMessages(const string& target, int fd);
+	void sendPartMessages(const string &channelName, int fd , const string reason);
 };
 
 #endif

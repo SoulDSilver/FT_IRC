@@ -3,9 +3,11 @@
 #include  "irc.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Server.hpp"
 
 class Client;
 class Channel;
+class Server;
 
 class Commands
 {
@@ -16,12 +18,12 @@ class Commands
         ~Commands();
         
     public:
-        static void TOPIC(Channel& channel, const string& topic);
+        static void TOPIC(Server& server, const string& target, int fd);
         static void MODE( Channel& channel, const string& mode);
-        static void JOIN( Channel& channel, const Client& client);
+        static void JOIN(Server& server, const string& channelName, int fd);
         static void INVITE( Channel& channel, const Client& target);
-        static void PART( Channel& channel, const Client& client);
-        static void PRIVMSG(const map<string, Channel>& channels, const string& target, const string& message, int fd,  bool isClientInChannel);
+        static void PART( Server& server, string& channelName, int fd);
+        static void PRIVMSG(Server& server, const string& target, const string& message, int fd);
         static void KICK( Channel& channel, const Client& client, const string& reason);
-        static void PING( int fd, const string& serverName);
+        static void PING(Server& server, const string& serverName, int fd);
 };

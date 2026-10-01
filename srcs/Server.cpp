@@ -119,6 +119,39 @@ void Server::pongmessage(int fd, const string &a)
 	}
 }
 
+size_t Server::channelExists(const string& channelName)
+{
+    return channels.count(channelName);
+}
+
+void Server::broadcastToChannel(const string& channelName, const string& message, int fd)
+{
+    channels.at(channelName).broadcastMessage(message, fd);
+}
+
+void Server::addClientToChannel(const string& channelName, int fd)
+{
+    channels.at(channelName).addClient(clients.at(fd));
+}
+
+void Server::sendChannelJoinMessages(const string& channelName, int fd)
+{
+	channels.at(channelName).sendJoinMessages(clients.at(fd));
+}
+
+void Server::sendTopicMessages(const string& target, int fd)
+{
+    channels.at(target).sendMessge("Envia o Topico do canal se tiver", fd);
+}
+
+void Server::sendPartMessages(const string &channelName, int fd , const string reason){
+	channels.at(channelName).sendPartMessage(clients.at(fd), reason);
+	channels.at(channelName).removeClient(clients.at(fd));
+	cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
+	if (channels.at(channelName).have_any_client())
+		removeChannel(channelName);
+}
+
 void Server::create_socket()
 {
 	int yes;
@@ -160,8 +193,9 @@ void Server::create_socket()
 	fds.push_back(NewP);
 }
 
-void Server::createChannel(const string &channelname, Client &client)
+void Server::createChannel(const string &channelname,  int fd)
 {
+	Client client = clients.at(fd);
 	Channel channel(channelname, *this, client);
 	channels.insert(make_pair(channelname, channel));
 	cout << GRE << "Channel <" << channelname << "> Created by Client <" << client.getNick() << ">" << WHI << endl;
@@ -261,34 +295,18 @@ void Server::handleClientData(int fd)
 
 		if (command == "PING")
 		{
-			string serverName = dt[1];
-			if (!serverName.empty())
-				pongmessage(fd, serverName);
+			Commands::PING(*this, dt[1], fd);
 		}
 
 		if (command == "JOIN")
 		{
-			string channelName = dt[1];
-			
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
-			if (channels.count(channelName) == 0)
-			{
-				createChannel(channelName, clients.at(fd));
-				channels.at(channelName).sendJoinMessages(clients.at(fd));
-			}
-			else if (channels.count(channelName) == 1)
-			{
-				channels.at(channelName).addClient(clients.at(fd));
-				channels.at(channelName).sendJoinMessages(clients.at(fd));
-				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
-			}
+			Commands::JOIN(*this, dt[1], fd);
 		}
-		else if (command == "PART")
+		
+		if (command == "PART")
 		{
 			string channelName = dt[1];
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\r'), channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(), '\n'), channelName.end());
+			
 			size_t reasonPosition = channelName.find(" :");
 			string reason;
 			if (reasonPosition != string::npos)
@@ -309,19 +327,13 @@ void Server::handleClientData(int fd)
 		}
 		if (command == "PRIVMSG")
 		{
-			Commands::PRIVMSG(channels, dt[1], dt[2], fd, isClientInChannel(dt[1], fd));			
+			Commands::PRIVMSG(*this, dt[1], dt[2], fd);			
 		}
 		if(command == "TOPIC"){
-			if(dt.size() == 2){
-				string target = dt[1];
-				if(channels.count(target) == 1){
-					cout << "canal: " << dt[1] << endl;
-					channels.at(target).sendMessge("Nome do Canal se tiver", fd);
-				}
+			if(dt.size() > 1){
+				Commands::TOPIC(*this, dt[1], fd);
 			}
 		}
-
-
 		buff[bytes] = '\0';
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
 		//verificando se esta vazio
