@@ -33,11 +33,11 @@ private:
 	void pongmessage(int fd, const string &a);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void removeChannel(const string &channelname);
-	bool dispatchCommand(Client &client, const CommandList &command);
-	void handlePass(Client &client, const string &parameters);
-	void handleNick(Client &client, const string &parameters);
-	void handleUser(Client &client, const string &parameters);
-	void handleQuit(Client &client, const string &parameters);
+    bool dispatchCommand(Client &client, const CommandPairVector &command);
+    void handlePass(Client &client, const CommandPairVector &command);
+    void handleNick(Client &client, const CommandPairVector &command);
+    void handleUser(Client &client, const CommandPairVector &command);
+    void handleQuit(Client &client, const CommandPairVector &command);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
 
 public:
@@ -48,7 +48,7 @@ public:
 
 	void run();
 	static void signalHandler(int signum);
-
+	bool checkClientRegistered(Client &client);
 	const string &getName() const;
 	const string &getPassword() const;
 	int getListenPort() const;
@@ -56,3 +56,4 @@ public:
 };
 
 #endif
+

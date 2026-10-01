@@ -126,6 +126,15 @@ bool Server::isClientInChannel(const string &channelName, int client_fd) const
 	return (false);
 }
 
+bool Server::checkClientRegistered(Client &client)
+{
+        if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false)
+                return true;
+        return false;
+
+}
+
+
 void Server::removeChannel(const string &channelname)
 {
 	channels.erase(channelname);
@@ -249,14 +258,19 @@ void Server::handleClientData(int fd)
 		client->second.appendInput(cca);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI << cca << endl;
 
-		while (client->second.extractLine(line))
-		{
-			CommandList parsed;
-			if (!Commands::parse(line, parsed))
-				continue;
-			if (!dispatchCommand(client->second, parsed))
-				return;
-		}
+        while (client->second.extractLine(line))
+        {
+                CommandList parsed;
+                if (!Commands::parse(line, parsed))
+                        continue;
+                for (CommandList::iterator it = parsed.begin();
+                        it != parsed.end(); ++it)
+                {
+                        if (!dispatchCommand(client->second, *it))
+                                return;
+                }
+        }
+
 
 		/*================================================================================*/
 		if (data.substr(0, 4) == "JOIN")
@@ -364,22 +378,28 @@ void Server::run()
 // typedef vector<CommandPairVector> CommandList;
 //
 
-bool Server::dispatchCommand(Client &client, const CommandList &command)
+bool Server::dispatchCommand(Client &client, const CommandPairVector &command)
 {
-	for (CommandList::const_iterator it = command.begin(); it != command.end(); ++it)
-	{
-		if (it->first == "PASS")
-			handlePass(client, it->second);
-		else if (it->first == "NICK")
-			handleNick(client, it->second);
-		else if (it->first == "USER")
-			handleUser(client, it->second);
-		else if (it->first == "QUIT")
-		{
-			cout << "a sair" << endl;
-			handleQuit(client, it->second);
-			return (false);
-		}
-	}
-	return (true);
+        if (command.first == "PASS")
+        {
+                handlePass(client, command);
+                return (true);
+        }
+        if (command.first == "NICK")
+        {
+                handleNick(client, command);
+                return (true);
+        }
+        if (command.first == "USER")
+        {
+                handleUser(client, command);
+                return (true);
+        }
+        if (command.first == "QUIT")
+        {
+                handleQuit(client, command);
+                return (false);
+        }
+        return (false);
 }
+
