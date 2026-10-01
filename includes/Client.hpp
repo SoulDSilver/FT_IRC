@@ -6,19 +6,20 @@
 class Client
 {
 private:
-	int fd;
-	string inbuff;
-	string outbuff;
-	string ipAddr;
-	string hostname;
-	string nick;
-	string username;
-	string realName;
-	bool passwordAccepted;
-	bool hasNick;
-	bool isWelcome;
-	bool hasHostname;
-	bool hasUsername;
+	bool IsWelcome;
+	bool HasHostname;
+
+	int Fd;
+	string Inbuff;
+	string IpAddr;
+	string Nick;
+	string Username;
+	string Hostname;
+	string RealName;
+	bool PasswordAccepted;
+	bool HasNick;
+	bool HasUsername;
+	bool Registered;
 
 public:
 	Client();
@@ -40,21 +41,18 @@ public:
 	void setRealName(const string &realName);
 	bool isPasswordAccepted() const;
 	void setPasswordAccepted();
-	bool hasNickSet() const;
-	void setHasNick();
-	bool hasWelcome() const;
-	void setWelcome();
-	bool hasUsernameSet() const;
+	void setRegistered();
+	bool isRegistered() const;
 	void setHasUsername();
-
+	bool hasUsername() const;
+	void setHasNick();
+	bool hasNick() const;
+	void setWelcome();
+	bool hasWelcome() const;
 	const string &getInbuff() const;
 	void appendInput(const string &inbuff);
-	const string &getOutBuff() const;
 	bool extractLine(string &line);
-	void setOutBuff(const string &outbuff);
-	void appendToOutBuff(const string &data);
 	void clearInBuff();
-	void clearOutBuff();
 	bool isValid() const;
 	void reset();
 };

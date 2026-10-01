@@ -1,151 +1,162 @@
 #include "Client.hpp"
 
-Client::Client() : fd(-1), ipAddr(""), username(""), realName(""), passwordAccepted(false), hasNick(false), isWelcome(false), hasUsername(false) {}
-
-Client::Client(const Client &other)
+Client::Client() : Fd(-1), Inbuff(""), IpAddr(""), Nick(""), Username(""),
+	RealName(""), PasswordAccepted(false), HasNick(false), HasUsername(false),
+	Registered(false)
 {
-    *this = other;
+    IsWelcome = false;
+}
+
+Client::Client(const Client &other) : Fd(other.Fd), Inbuff(other.Inbuff),
+	IpAddr(other.IpAddr), Nick(other.Nick), Username(other.Username),
+	RealName(other.RealName), PasswordAccepted(other.PasswordAccepted),
+	HasNick(other.HasNick), HasUsername(other.HasUsername),
+	Registered(other.Registered)
+{
 }
 
 Client &Client::operator=(const Client &other)
 {
-    if (this != &other)
-    {
-        fd = other.fd;
-        inbuff = other.inbuff;
-        outbuff = other.outbuff;
-        ipAddr = other.ipAddr;
-        nick = other.nick;
-        username = other.username;
-        realName = other.realName;
-        passwordAccepted = other.passwordAccepted;
-        hasNick = other.hasNick;
-        hasUsername = other.hasUsername;
-    }
-    return *this;
+	if (this != &other)
+	{
+		Fd = other.Fd;
+		Inbuff = other.Inbuff;
+		IpAddr = other.IpAddr;
+		Nick = other.Nick;
+		Username = other.Username;
+		RealName = other.RealName;
+		PasswordAccepted = other.PasswordAccepted;
+		HasNick = other.HasNick;
+		HasUsername = other.HasUsername;
+		Registered = other.Registered;
+	}
+	return (*this);
 }
 
-bool Client::operator==(const Client &other) const
+Client::~Client()
 {
-    return (this->fd == other.fd);
 }
-
-Client::~Client() {}
 
 int Client::getFd() const
 {
-    return fd;
+	return (Fd);
 }
 void Client::setFd(int fd)
 {
-    this->fd = fd;
+	this->Fd = fd;
 }
 
 const string &Client::getIpAddr() const
 {
-    return ipAddr;
+	return (IpAddr);
 }
-
-bool Client::hasWelcome() const
-{
-    return isWelcome;
-}
-
-void Client::setWelcome()
-{
-   isWelcome = true;
-}
-
 void Client::setIpAddr(const string &ipAddr)
 {
-    this->ipAddr = ipAddr;
+	this->IpAddr = ipAddr;
 }
 
 const string &Client::getUsername() const
 {
-    return username;
+	return (Username);
 }
 string Client::getNick() const
 {
-    return nick;
+	return (Nick);
 }
 void Client::setNick(const string &nick)
 {
-    this->nick = nick;
+	this->Nick = nick;
 }
 void Client::setUsername(const string &username)
 {
-    this->username = username;
+	this->Username = username;
+}
+
+void Client::setRealName(const string &realName)
+{
+	this->RealName = realName;
 }
 
 const string &Client::getRealName() const
 {
-    return realName;
+	return (this->RealName);
 }
-void Client::setRealName(const string &realName)
+
+void Client::setHasUsername()
 {
-    this->realName = realName;
+	this->HasUsername = true;
+}
+
+bool Client::hasUsername() const
+{
+	return (this->HasUsername);
+}
+
+void Client::setPasswordAccepted()
+{
+	this->PasswordAccepted = true;
 }
 
 bool Client::isPasswordAccepted() const
 {
-    return passwordAccepted;
-}
-void Client::setPasswordAccepted()
-{
-    passwordAccepted = true;
+	return (this->PasswordAccepted);
 }
 
-bool Client::hasNickSet() const
-{
-    return hasNick;
-}
 void Client::setHasNick()
 {
-    hasNick = true;
+	this->HasNick = true;
 }
 
-bool Client::hasUsernameSet() const
+bool Client::hasNick() const
 {
-    return hasUsername;
+	return (this->HasNick);
 }
-void Client::setHasUsername()
+
+void Client::setWelcome()
 {
-    hasUsername = true;
+	this->IsWelcome = true;
+}
+
+bool Client::hasWelcome() const
+{
+    return (this->IsWelcome);
 }
 
 void Client::appendInput(const string &data)
 {
-    this->inbuff += data;
+	this->Inbuff += data;
 }
 
 const string &Client::getInbuff() const
 {
-    return (this->inbuff);
+	return (this->Inbuff);
 }
 
 bool Client::extractLine(string &line)
 {
-    size_t end = this->inbuff.find('\n');
-    if (end == string::npos)
-        return (false);
+	size_t	end;
 
-    line = this->inbuff.substr(0, end);
-    if (!line.empty() && line[line.size() - 1] == '\r')
-        line.erase(line.size() - 1);
-    this->inbuff.erase(0, end + 1);
-    return (true);
+	end = this->Inbuff.find('\n');
+	if (end == string::npos)
+		return (false);
+	line = this->Inbuff.substr(0, end);
+	if (!line.empty() && line[line.size() - 1] == '\r')
+		line.erase(line.size() - 1);
+	this->Inbuff.erase(0, end + 1);
+	return (true);
 }
 
-
+bool Client::isRegistered() const
+{
+	return (this->Registered);
+}
+void Client::setRegistered()
+{
+	this->Registered = true;
+}
 
 ostream &operator<<(ostream &stream, const Client &cl)
 {
-    stream << "Cliente [FD: " << cl.getFd()
-           << " | Nick: " << (cl.getNick().empty() ? "<sem_nick>" : cl.getNick())
-           << " | User: " << (cl.getUsername().empty() ? "<sem_user>" : cl.getUsername())
-           << " | IP: " << cl.getIpAddr()
-           << "]";
-
-    return stream;
+	stream << "Cliente [FD: " << cl.getFd() << " | Nick: " << (cl.getNick().empty() ? "<sem_nick>" : cl.getNick()) << " | User: " << (cl.getUsername().empty() ? "<sem_user>" : cl.getUsername()) << " | IP: " << cl.getIpAddr() << "]";
+	return (stream);
 }
