@@ -30,10 +30,12 @@ private:
 	void handleClientData(int client_fd);
 	void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
-	void pongmessage(int fd, const string &a);
+	void pongmessage(int fd, const string &token);
+	void handleCap(Client &client, const CommandPairVector &command);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void removeChannel(const string &channelname);
-    bool dispatchCommand(Client &client, const CommandPairVector &command);
+	enum DispatchResult { DISPATCH_OK, DISPATCH_QUIT, DISPATCH_UNKNOWN };
+	DispatchResult dispatchCommand(Client &client, const CommandPairVector &command);
     void handlePass(Client &client, const CommandPairVector &command);
     void handleNick(Client &client, const CommandPairVector &command);
     void handleUser(Client &client, const CommandPairVector &command);

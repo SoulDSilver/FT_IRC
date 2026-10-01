@@ -24,8 +24,10 @@ namespace
         { "MODE",    2, { PP_CHANNEL, PP_MODE },                            false },
         { "TOPIC",   2, { PP_CHANNEL, PP_TOPIC },                           true  },
         { "INVITE",  2, { PP_TARGET, PP_CHANNEL },                          false },
-        { "KICK",    3, { PP_CHANNEL, PP_TARGET, PP_REASON },               true  }
-    };
+{ "KICK",    3, { PP_CHANNEL, PP_TARGET, PP_REASON },  true  },
+	{ "CAP",     1, { PP_TARGET },                           false },
+	{ "PING",    1, { PP_TARGET },                           false }
+};
 
     const size_t COMMAND_TABLE_SIZE =
         sizeof(COMMAND_TABLE) / sizeof(COMMAND_TABLE[0]);

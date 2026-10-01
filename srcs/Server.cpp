@@ -99,23 +99,45 @@ void Server::removeClients(int fd)
 
 void Server::welcomeMessage(Client &client)
 {
-	string welcomeMsg;
+	string prefix = client.getNick() + "!" + client.getUsername() + "@"
+		+ client.getIpAddr();
+	string burst;
 
-	welcomeMsg = ":" + this->getName() + " 001 " + client.getNick() + " :Welcome to the IRC server, " + client.getNick() + "!\r\n";
-	send(client.getFd(), welcomeMsg.c_str(), welcomeMsg.length(), 0);
+	burst = ":" + name + " 001 " + client.getNick()
+		+ " :Welcome to the IRC Network " + prefix + "\r\n";
+	burst += ":" + name + " 002 " + client.getNick()
+		+ " :Your host is " + name + ", running ircd-1.0\r\n";
+	burst += ":" + name + " 003 " + client.getNick()
+		+ " :This server was created at the start of the session\r\n";
+	burst += ":" + name + " 004 " + client.getNick() + " " + name
+		+ " ircd-1.0 o o\r\n";
+
+	send(client.getFd(), burst.c_str(), burst.length(), 0);
 }
 
-void Server::pongmessage(int fd, const string &a)
+void Server::pongmessage(int fd, const string &token)
 {
-	string retorno;
+	if (token.empty())
+		return;
 
-	if (!a.empty())
+	string reply = ":" + name + " PONG " + token + "\r\n";
+	send(fd, reply.c_str(), reply.length(), 0);
+}
+
+void Server::handleCap(Client &client, const CommandPairVector &command)
+{
+	string subcommand = Parser::getParam(command, PP_TARGET);
+
+	if (subcommand == "LS" || subcommand == "NEW" || subcommand == "LIST")
 	{
-		retorno = "PONG " + a + "\r\n";
-		send(fd, retorno.c_str(), retorno.size(), 0);
+		string reply = ":" + name + " CAP * LS :\r\n";
+		send(client.getFd(), reply.c_str(), reply.length(), 0);
 	}
-	else
-		send(fd, "PONG :ola do server \r\n", 23, 0);
+	else if (subcommand == "REQ")
+	{
+		string reply = ":" + name + " CAP * NAK :\r\n";
+		send(client.getFd(), reply.c_str(), reply.length(), 0);
+	}
 }
 
 bool Server::isClientInChannel(const string &channelName, int client_fd) const
@@ -225,7 +247,6 @@ void Server::handleClientData(int fd)
 	size_t pos;
 	string target;
 	string message;
-	string serverName;
 
 	memset(buff, 0, sizeof(buff));
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
@@ -240,22 +261,22 @@ void Server::handleClientData(int fd)
 		map<int, Client>::iterator client = this->clients.find(fd);
 		if (client == this->clients.end())
 			return;
-		string data(buff);
-		if (data.compare(0, 4, "PING") == 0)
-		{
-			serverName = data.substr(4);
-			serverName.erase(remove(serverName.begin(), serverName.end(), '\r'),
-							 serverName.end());
-			serverName.erase(remove(serverName.begin(), serverName.end(), '\n'),
-							 serverName.end());
-			if (!serverName.empty())
-				pongmessage(fd, serverName);
-		}
-		string cca(buff);
+		string data(buff, static_cast<size_t>(bytes));
+		string cca = data;
 		string line;
 
 		client->second.appendInput(cca);
-		cout << YEL << "Client <" << fd << "> Data: " << WHI << cca << endl;
+		cout << YEL << "Client <" << fd << "> Data: " << WHI;
+		for (size_t i = 0; i < cca.size(); i++)
+		{
+			if (cca[i] == '\n')
+				cout << "<LF>\n";
+			else if (cca[i] == '\r')
+				cout << "<CR>";
+			else
+				cout << cca[i];
+		}
+		cout << endl;
 
 		while (client->second.extractLine(line))
 		{
@@ -265,8 +286,14 @@ void Server::handleClientData(int fd)
 			for (CommandList::iterator it = parsed.begin();
 				 it != parsed.end(); ++it)
 			{
-				if (!dispatchCommand(client->second, *it))
+				DispatchResult result = dispatchCommand(client->second, *it);
+				if (result == DISPATCH_QUIT)
 					return;
+				if (result == DISPATCH_UNKNOWN)
+				{
+					sendNumericReply(client->second, "421",
+						it->first + " :Unknown command");
+				}
 			}
 		}
 
@@ -371,27 +398,41 @@ void Server::run()
 	cout << "The Server Closed!" << endl;
 }
 
-bool Server::dispatchCommand(Client &client, const CommandPairVector &command)
+Server::DispatchResult Server::dispatchCommand(Client &client,
+	const CommandPairVector &command)
 {
 	if (command.first == "PASS")
 	{
 		handlePass(client, command);
-		return (true);
+		return (DISPATCH_OK);
 	}
 	if (command.first == "NICK")
 	{
 		handleNick(client, command);
-		return (true);
+		return (DISPATCH_OK);
 	}
 	if (command.first == "USER")
 	{
 		handleUser(client, command);
-		return (true);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "CAP")
+	{
+		handleCap(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "PING")
+	{
+		string token = Parser::getParam(command, PP_TARGET);
+		if (!token.empty() && token[0] == ':')
+			token.erase(0, 1);
+		pongmessage(client.getFd(), token);
+		return (DISPATCH_OK);
 	}
 	if (command.first == "QUIT")
 	{
 		handleQuit(client, command);
-		return (false);
+		return (DISPATCH_QUIT);
 	}
-	return (false);
+	return (DISPATCH_UNKNOWN);
 }
