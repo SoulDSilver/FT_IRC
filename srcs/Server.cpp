@@ -227,7 +227,7 @@ void Server::handleClientData(int fd)
 
 	string data(buff, static_cast<size_t>(bytes));
 	client->second.appendInput(data);
-	cout << YEL << "Client <" << fd << "> Data: " << WHI << data << endl;
+	cout << YEL << "Client <" << fd << "> Data: " << WHI << data;
 
 	string line;
 	while (client->second.extractLine(line))
