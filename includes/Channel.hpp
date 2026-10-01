@@ -26,22 +26,20 @@ public:
     bool operator==(const Channel &other);
     ~Channel();
 
-
     const string &getName() const;
     const string &getPassword() const;
     const map<int, Client> &getClients() const;
     const map<int, Client> &getOperators() const;
-    const vector<string> &getSettings() const;
+    const map<string, string> &getSettings() const;
     const vector<int> &getInvitedUsers() const;
-    
+
     void setPassword(const string &password);
     void addInvitedUser(int fd);
     void addOperator(const Client &client);
     void addClient(const Client &client);
 
-
     bool have_any_client() const;
-    
+
     void removeClient(const Client &client);
     void removeOperator(const Client &client);
     void removeInvitedUser(const int &fd);
@@ -49,11 +47,9 @@ public:
 
     bool isClientPresent(int fd) const;
     bool isOperator(int fd) const;
-    
-    void addSetting(const string &setting);
+    void addSetting(const string &setting, const string &value);
     void listclients() const;
-    
-    
+
     void sendJoinMessages(const Client &client) const;
     void sendPartMessage(const Client &client, const string &reason) const;
     void broadcastMessage(const string &message, int senderFd) const;

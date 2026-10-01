@@ -9,7 +9,7 @@ Channel::Channel(const string &name, Server &server,
 	settings.insert(make_pair("Topic", ""));
 	
 	settings.insert(make_pair("Permission", "Public"));
-	settings.insert(make_pair("Name", name));
+	
 	this->clients.insert(make_pair(client.getFd(), client));
 	this->operators.insert(make_pair(client.getFd(), client));
 }
@@ -60,7 +60,7 @@ const map<int, Client> &Channel::getOperators() const
 	return (operators);
 }
 
-const vector<string> &Channel::getSettings() const
+const map<string, string> &Channel::getSettings() const
 {
 	return (settings);
 }
@@ -72,7 +72,7 @@ const vector<int> &Channel::getInvitedUsers() const
 
 void Channel::setPassword(const string &password)
 {
-	this->password = password;
+	settings.at("Password") = password;
 }
 
 bool Channel::have_any_client() const
@@ -115,17 +115,16 @@ void Channel::removeOperator(const Client &client)
 	operators.erase(client.getFd());
 }
 
-void Channel::addSetting(const string &setting)
+void Channel::addSetting(const string &setting, const string &value)
 {
-	if (find(settings.begin(), settings.end(), setting) == settings.end())
-		settings.push_back(setting);
+	settings.insert(make_pair(setting, value));
 }
+
 
 void Channel::removeSetting(const string &setting)
 {
-	vector<string>::iterator it = find(settings.begin(), settings.end(), setting);
-	if (it != settings.end())
-		settings.erase(it);
+	if(settings.count(setting))
+		settings.erase(setting);
 }
 
 void Channel::addInvitedUser(int a)
@@ -158,10 +157,10 @@ void Channel::sendJoinMessages(const Client &client) const
 		names += it->second.getNick();
 	}
 
-	string messages = prefix + " JOIN :" + name + "\r\n";
-	messages += ":" + server.getName() + " 331 " + client.getNick() + " " + name + " :No topic is set\r\n";
-	messages += ":" + server.getName() + " 353 " + client.getNick() + " = " + name + " :" + names + "\r\n";
-	messages += ":" + server.getName() + " 366 " + client.getNick() + " " + name + " :End of /NAMES list\r\n";
+	string messages = prefix + " JOIN :" + settings.at("Name") + "\r\n";
+	messages += ":" + server.getName() + " 331 " + client.getNick() + " " + settings.at("Name") + " :No topic is set\r\n";
+	messages += ":" + server.getName() + " 353 " + client.getNick() + " = " + settings.at("Name") + " :" + names + "\r\n";
+	messages += ":" + server.getName() + " 366 " + client.getNick() + " " + settings.at("Name") + " :End of /NAMES list\r\n";
 	send(client.getFd(), messages.c_str(), messages.length(), 0);
 }
 
@@ -171,7 +170,7 @@ void Channel::sendPartMessage(const Client &client, const string &reason) const
 	if (host.empty())
 		host = "host";
 	string message = ":" + client.getNick() + "!" + client.getUsername() + "@" + host;
-	message += " PART " + name;
+	message += " PART " + settings.at("Name");
 	if (!reason.empty())
 		message += " :" + reason;
 	message += "\r\n";
@@ -190,7 +189,7 @@ void Channel::broadcastMessage(const string &message, int senderFd) const
 	{
 		if (it->first != senderFd)
 		{
-			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@localhost PRIVMSG " + this->name + " :" + message + "\r\n";
+			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@" + sender->second.getIpAddr() + "PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
 			send(it->first, sms.c_str(), sms.length(), 0);
 		}
 	}
