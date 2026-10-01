@@ -35,10 +35,14 @@ Server::~Server()
 
 void Server::closeFds()
 {
-	for (size_t i = 0; i < clients.size(); i++)
-	{ //-> close all the clients
-		cout << RED << "Client <" << clients[i].getFd() << "> Disconnected" << WHI << endl;
-		close(clients[i].getFd());
+	vector<struct pollfd>::iterator it;
+	for (it = fds.begin(); it != fds.end(); ++it)
+	{
+		if (it->fd != -1 && it->fd != listen_fd)
+		{
+			cout << RED << "Client <" << it->fd << "> Disconnected" << WHI << endl;
+			close(it->fd);
+		}
 	}
 	if (this->listen_fd != -1)
 	{ //-> close the server socket
@@ -127,7 +131,8 @@ bool Server::isClientInChannel(const string &channelName, int client_fd) const
 
 bool Server::checkClientRegistered(Client &client)
 {
-	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false)
+	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted()
+		&& client.isRegistered() == false && client.hasWelcome() == false)
 		return true;
 	return false;
 }

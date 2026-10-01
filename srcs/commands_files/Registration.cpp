@@ -79,8 +79,9 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 	if (checkClientRegistered(client) == true)
 	{
 		client.setRegistered();
-		if (client.isRegistered())
-			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		client.setWelcome();
+		sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		cout << GRE << "Client <" << client.getFd() << "> Registered with Password: " << parameters << WHI << endl;
 	}
 }
 
@@ -110,8 +111,9 @@ void Server::handleNick(Client &client, const CommandPairVector &command)
 	if (checkClientRegistered(client) == true)
 	{
 		client.setRegistered();
-		if (client.isRegistered())
-			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		client.setWelcome();
+		sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		cout << GRE << "Client <" << client.getFd() << "> Registered with Nickname: " << nickname << WHI << endl;
 	}
 }
 
@@ -140,8 +142,9 @@ void Server::handleUser(Client &client, const CommandPairVector &command)
 	if (checkClientRegistered(client) == true)
 	{
 		client.setRegistered();
-		if (client.isRegistered())
-			sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		client.setWelcome();
+		sendNumericReply(client, "001", ":Welcome to the IRC Network");
+		cout << GRE << "Client <" << client.getFd() << "> Registered with Username: " << username << WHI << endl;
 	}
 }
 
