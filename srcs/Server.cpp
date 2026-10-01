@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include "Commands.hpp"
+#include "Parser.hpp"
 
 Server::Server() : Listen_port(0), Password(""), Listen_fd(-1)
 {
@@ -233,7 +233,7 @@ void Server::handleClientData(int fd)
 	while (client->second.extractLine(line))
 	{
 		CommandList parsed;
-		if (!Commands::parse(line, parsed))
+		if (!Parser::parse(line, parsed))
 			continue;
 		for (CommandList::iterator it = parsed.begin();
 			it != parsed.end(); ++it)
