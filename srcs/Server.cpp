@@ -264,9 +264,9 @@ void Server::handleClientData(int fd)
 		for (size_t i = 0; i < cca.size(); i++)
 		{
 			if (cca[i] == '\n')
-				cout << " <LF>\n";
+				cout << "<LF>\n";
 			else if (cca[i] == '\r')
-				cout << " <CR>";
+				cout << "<CR>";
 			else
 				cout << cca[i];
 		}
