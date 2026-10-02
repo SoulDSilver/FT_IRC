@@ -26,7 +26,9 @@ namespace
         { "INVITE",  2, { PP_TARGET, PP_CHANNEL },                          false },
 { "KICK",    3, { PP_CHANNEL, PP_TARGET, PP_REASON },  true  },
 	{ "CAP",     1, { PP_TARGET },                           false },
-	{ "PING",    1, { PP_TARGET },                           false }
+	{ "PING",    1, { PP_TARGET },                           false },
+	{ "WHOIS",   1, { PP_TARGET },                           false },
+	{ "MOTD",    0, { PP_UNKNOWN },                           false }
 };
 
     const size_t COMMAND_TABLE_SIZE =
