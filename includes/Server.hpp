@@ -40,6 +40,12 @@ private:
     void handleNick(Client &client, const CommandPairVector &command);
     void handleUser(Client &client, const CommandPairVector &command);
     void handleQuit(Client &client, const CommandPairVector &command);
+    void handleJoin(Client &client, const CommandPairVector &command);
+    void handlePart(Client &client, const CommandPairVector &command);
+    void handlePrivmsg(Client &client, const CommandPairVector &command);
+    void handleMode(Client &client, const CommandPairVector &command);
+    void handleWhois(Client &client, const CommandPairVector &command);
+    void handleMotd(Client &client, const CommandPairVector &command);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
 
 public:

@@ -241,12 +241,6 @@ void Server::addNewClient()
 void Server::handleClientData(int fd)
 {
 	char buff[1024];
-	string channelName;
-	size_t reasonPosition;
-	string reason;
-	size_t pos;
-	string target;
-	string message;
 
 	memset(buff, 0, sizeof(buff));
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
@@ -270,13 +264,13 @@ void Server::handleClientData(int fd)
 		for (size_t i = 0; i < cca.size(); i++)
 		{
 			if (cca[i] == '\n')
-				cout << "<LF>\n";
+				cout << " <LF>\n";
 			else if (cca[i] == '\r')
-				cout << "<CR>";
+				cout << " <CR>";
 			else
 				cout << cca[i];
 		}
-		cout << endl;
+		// cout << endl;
 
 		while (client->second.extractLine(line))
 		{
@@ -296,100 +290,26 @@ void Server::handleClientData(int fd)
 				}
 			}
 		}
-
-		/*================================================================================*/
-		if (data.substr(0, 4) == "JOIN")
-		{
-			channelName = data.substr(5);
-			channelName.erase(remove(channelName.begin(), channelName.end(),
-									 '\r'),
-							  channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(),
-									 '\n'),
-							  channelName.end());
-			if (channels.count(channelName) == 0)
-			{
-				createChannel(channelName, clients.at(fd));
-				channels.at(channelName).sendJoinMessages(clients.at(fd));
-			}
-			else if (channels.count(channelName) == 1)
-			{
-				channels.at(channelName).addClient(clients.at(fd));
-				channels.at(channelName).sendJoinMessages(clients.at(fd));
-				cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
-			}
-		}
-		/*================================================================================*/
-		if (data.substr(0, 4) == "PART")
-		{
-			channelName = data.substr(5);
-			channelName.erase(remove(channelName.begin(), channelName.end(),
-									 '\r'),
-							  channelName.end());
-			channelName.erase(remove(channelName.begin(), channelName.end(),
-									 '\n'),
-							  channelName.end());
-			reasonPosition = channelName.find(" :");
-			if (reasonPosition != string::npos)
-			{
-				reason = channelName.substr(reasonPosition + 2);
-				channelName = channelName.substr(0, reasonPosition);
-			}
-			if (channels.count(channelName) == 1 && isClientInChannel(channelName, fd))
-			{
-				channels.at(channelName).sendPartMessage(clients.at(fd), reason);
-				channels.at(channelName).removeClient(clients.at(fd));
-				cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
-				if (channels.at(channelName).have_any_client())
-					removeChannel(channelName);
-			}
-		}
-		/*================================================================================*/
-		if (data.substr(0, 7) == "PRIVMSG")
-		{
-			pos = data.find(" ");
-			if (pos != string::npos)
-			{
-				target = data.substr(pos + 1, data.find(" ", pos + 1) - pos - 1);
-				cout << GRE << "target" << target << WHI << endl;
-				message = data.substr(data.find(":", pos) + 1);
-				message.erase(remove(message.begin(), message.end(), '\r'),
-							  message.end());
-				message.erase(remove(message.begin(), message.end(), '\n'),
-							  message.end());
-				if (channels.count(target) == 1)
-				{
-					if (isClientInChannel(target, fd))
-						channels.at(target).broadcastMessage(message, fd);
-				}
-			}
-		}
 	}
 }
 
 void Server::run()
 {
 	create_socket();
-	// cout << "accepting connections on port " << listen_port << endl;
 	cout << GRE << "Server <" << this->listen_fd << "> Connected" << WHI << endl;
 	cout << "Waiting to accept a connection...\n";
 	while (Server::Signal == false)
-	{ //-> run the server until the signal is received
+	{
 		if ((poll(fds.data(), fds.size(), -1) == -1) && Server::Signal == false)
 			throw(runtime_error("poll() faild"));
 		for (size_t i = 0; i < fds.size(); i++)
-		{ //-> check all file descriptors
+		{
 			if (fds[i].revents & POLLIN)
-			{ //-> check if there is data to read revents = POLLIN
+			{
 				if (fds[i].fd == this->listen_fd)
-				{
-					addNewClient(); //-> accept new client
-				}
+					addNewClient();
 				else
-				{
 					handleClientData(fds[i].fd);
-					//-> handle data from existing client
-				}
 			}
 		}
 	}
@@ -419,6 +339,36 @@ Server::DispatchResult Server::dispatchCommand(Client &client,
 	if (command.first == "CAP")
 	{
 		handleCap(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "JOIN")
+	{
+		handleJoin(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "PART")
+	{
+		handlePart(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "PRIVMSG")
+	{
+		handlePrivmsg(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "MODE")
+	{
+		handleMode(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "WHOIS")
+	{
+		handleWhois(client, command);
+		return (DISPATCH_OK);
+	}
+	if (command.first == "MOTD")
+	{
+		handleMotd(client, command);
 		return (DISPATCH_OK);
 	}
 	if (command.first == "PING")
