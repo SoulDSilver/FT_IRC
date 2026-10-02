@@ -192,7 +192,7 @@ void Channel::broadcastMessage(const string &message, int senderFd) const
 	{
 		if (it->first != senderFd)
 		{
-			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@" + sender->second.getIpAddr() + "PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
+			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@" + sender->second.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
 			send(it->first, sms.c_str(), sms.length(), 0);
 		}
 	}
