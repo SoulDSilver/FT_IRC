@@ -49,6 +49,7 @@ private:
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
 
 public:
+
 	Server(int port, const string &password);
 	Server(const Server &other);
 	Server &operator=(const Server &other);

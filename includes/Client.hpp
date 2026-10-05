@@ -22,6 +22,9 @@ private:
 	bool Registered;
 
 public:
+
+	bool passfail;
+
 	Client();
 	Client(const Client &other);
 	Client &operator=(const Client &other);
@@ -55,6 +58,7 @@ public:
 	void clearInBuff();
 	bool isValid() const;
 	void reset();
+
 };
 
 ostream &operator<<(std::ostream &stream, const Client &cl);

@@ -3,6 +3,7 @@
 
 void Server::handleJoin(Client &client, const CommandPairVector &command)
 {
+	cout << "meu nome real: " << client.getRealName() << endl;
 	if (!client.isRegistered())
 	{
 		sendNumericReply(client, "451", ":You have not registered");

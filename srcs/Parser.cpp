@@ -6,30 +6,29 @@ namespace
 
     struct CommandSpec
     {
-        const char     *name;
-        size_t          paramCount;
-        ParsedParamId   ids[MAX_SPEC_PARAMS];
-        bool            hasTrailing;
+        const char *name;
+        size_t paramCount;
+        ParsedParamId ids[MAX_SPEC_PARAMS];
+        bool hasTrailing;
     };
 
     const CommandSpec COMMAND_TABLE[] =
-    {
-        { "PASS",    1, { PP_PASSWORD },                                    false },
-        { "NICK",    1, { PP_NICK },                                        false },
-        { "USER",    4, { PP_USER, PP_USER_MODE, PP_UNUSED, PP_REALNAME },  true  },
-        { "QUIT",    1, { PP_REASON },                                      true  },
-        { "JOIN",    1, { PP_CHANNEL },                                     false },
-        { "PART",    2, { PP_CHANNEL, PP_REASON },                          true  },
-        { "PRIVMSG", 2, { PP_TARGET, PP_MESSAGE },                          true  },
-        { "MODE",    2, { PP_CHANNEL, PP_MODE },                            false },
-        { "TOPIC",   2, { PP_CHANNEL, PP_TOPIC },                           true  },
-        { "INVITE",  2, { PP_TARGET, PP_CHANNEL },                          false },
-{ "KICK",    3, { PP_CHANNEL, PP_TARGET, PP_REASON },  true  },
-	{ "CAP",     1, { PP_TARGET },                           false },
-	{ "PING",    1, { PP_TARGET },                           false },
-	{ "WHOIS",   1, { PP_TARGET },                           false },
-	{ "MOTD",    0, { PP_UNKNOWN },                           false }
-};
+        {
+            {"PASS", 1, {PP_PASSWORD}, false},
+            {"NICK", 1, {PP_NICK}, false},
+            {"USER", 4, {PP_USER, PP_USER_MODE, PP_UNUSED, PP_REALNAME}, true},
+            {"QUIT", 1, {PP_REASON}, true},
+            {"JOIN", 1, {PP_CHANNEL}, false},
+            {"PART", 2, {PP_CHANNEL, PP_REASON}, true},
+            {"PRIVMSG", 2, {PP_TARGET, PP_MESSAGE}, true},
+            {"MODE", 2, {PP_CHANNEL, PP_MODE}, false},
+            {"TOPIC", 2, {PP_CHANNEL, PP_TOPIC}, true},
+            {"INVITE", 2, {PP_TARGET, PP_CHANNEL}, false},
+            {"KICK", 3, {PP_CHANNEL, PP_TARGET, PP_REASON}, true},
+            {"CAP", 1, {PP_TARGET}, false},
+            {"PING", 1, {PP_TARGET}, false},
+            {"WHOIS", 1, {PP_TARGET}, false},
+            {"MOTD", 0, {PP_UNKNOWN}, false}};
 
     const size_t COMMAND_TABLE_SIZE =
         sizeof(COMMAND_TABLE) / sizeof(COMMAND_TABLE[0]);
@@ -52,8 +51,8 @@ namespace
     }
 
     size_t extractPositional(const string &parameters, size_t limit,
-        const ParsedParamId *ids, size_t positionalCount,
-        vector<CommandPair> &params)
+                             const ParsedParamId *ids, size_t positionalCount,
+                             vector<CommandPair> &params)
     {
         size_t pos = 0;
 
@@ -75,7 +74,7 @@ namespace
 }
 
 static vector<CommandPair> buildParams(const string &command,
-    const string &parameters)
+                                       const string &parameters)
 {
     const CommandSpec *spec = findCommandSpec(command);
     if (spec == NULL)
@@ -94,7 +93,7 @@ static vector<CommandPair> buildParams(const string &command,
     }
 
     size_t pos = extractPositional(parameters, limit, spec->ids,
-        positionalCount, params);
+                                   positionalCount, params);
     if (spec->hasTrailing && colon != string::npos)
         params.push_back(make_pair(spec->ids[positionalCount], parameters.substr(colon + 1)));
 
@@ -113,7 +112,7 @@ bool Parser::parse(const string &line, CommandList &commands)
 
     size_t end = line.find_first_of(" \t", start);
     string command = (end == string::npos) ? line.substr(start)
-        : line.substr(start, end - start);
+                                           : line.substr(start, end - start);
     for (size_t i = 0; i < command.size(); i++)
         command[i] = static_cast<char>(toupper(static_cast<unsigned char>(command[i])));
 
@@ -132,7 +131,7 @@ bool Parser::parse(const string &line, CommandList &commands)
 bool Parser::hasParam(const CommandPairVector &command, ParsedParamId id)
 {
     for (vector<CommandPair>::const_iterator it = command.second.begin();
-        it != command.second.end(); ++it)
+         it != command.second.end(); ++it)
     {
         if (it->first == id)
             return (true);
@@ -144,7 +143,7 @@ const string &Parser::getParam(const CommandPairVector &command, ParsedParamId i
 {
     static const string Empty;
     for (vector<CommandPair>::const_iterator it = command.second.begin();
-        it != command.second.end(); ++it)
+         it != command.second.end(); ++it)
     {
         if (it->first == id)
             return (it->second);

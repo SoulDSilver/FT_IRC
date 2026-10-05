@@ -5,13 +5,14 @@ Client::Client() : Fd(-1), Inbuff(""), IpAddr(""), Nick(""), Username(""),
 	Registered(false)
 {
     IsWelcome = false;
+	passfail = false;
 }
 
 Client::Client(const Client &other) : IsWelcome(other.IsWelcome),
 	Fd(other.Fd), Inbuff(other.Inbuff), IpAddr(other.IpAddr), Nick(other.Nick),
 	Username(other.Username), RealName(other.RealName),
 	PasswordAccepted(other.PasswordAccepted), HasNick(other.HasNick),
-	HasUsername(other.HasUsername), Registered(other.Registered)
+	HasUsername(other.HasUsername), Registered(other.Registered), passfail(other.passfail)
 {
 }
 
@@ -30,6 +31,7 @@ Client &Client::operator=(const Client &other)
 		HasUsername = other.HasUsername;
 		Registered = other.Registered;
 		IsWelcome = other.IsWelcome;
+		passfail = other.passfail;
 	}
 	return (*this);
 }

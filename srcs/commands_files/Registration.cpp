@@ -72,7 +72,9 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 	if (password != parameters)
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
-		return;
+		removeClients(client.getFd());
+		client.passfail = true;
+		return ;
 	}
 
 	client.setPasswordAccepted();

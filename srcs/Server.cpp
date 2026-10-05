@@ -255,6 +255,12 @@ void Server::handleClientData(int fd)
 		map<int, Client>::iterator client = this->clients.find(fd);
 		if (client == this->clients.end())
 			return;
+		if(client->second.passfail == true)
+		{
+			cout << RED << "Client <" << fd << "> Disconnected due to password failure" << WHI << endl;
+			removeClients(fd);
+			return;
+		}
 		string data(buff, static_cast<size_t>(bytes));
 		string cca = data;
 		string line;
