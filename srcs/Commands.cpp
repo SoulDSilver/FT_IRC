@@ -55,4 +55,57 @@ void Commands::TOPIC(Server& server, const string& target , int fd)
 }
 
 
+void Commands::processCommands(Server& server, const CommandList& parsedCommands, int fd){
+	for (size_t i = 0; i < parsedCommands.size(); i++){
+		if (parsedCommands[i].first == "PASS")
+		{
+			pass(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "NICK")
+		{
+			nick(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "USER")
+		{
+			user(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "JOIN")
+		{
+			join(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "PART")
+		{
+			part(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "PRIVMSG")
+		{
+			privmsg(server, "parames", "other argument", fd);
+		}
+		else if (parsedCommands[i].first == "KICK")
+		{
+			kick(channel, client, "other argument");
+		}
+		else if (parsedCommands[i].first == "INVITE")
+		{
+			invite(channel, target);
+		}
+		else if (parsedCommands[i].first == "TOPIC")
+		{
+			topic(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "MODE")
+		{
+			mode(channel, "parames");
+		}
+		else if (parsedCommands[i].first == "QUIT")
+		{
+			quit(server, "parames", fd);
+		}
+		else if (parsedCommands[i].first == "PING")
+		{
+			ping(server, "parames", fd);
+		}
+
+	}
+}
         

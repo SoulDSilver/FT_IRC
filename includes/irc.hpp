@@ -28,6 +28,8 @@
 
 using namespace std;
 
+//usar o proprio enum ao invez de int
+//typedef pair<ParsedParamId, string> Parameters;
 typedef pair<int, string> Parameters;
 typedef pair<string, vector<Parameters> > CommandPairVector;
 typedef vector<CommandPairVector> CommandList;
