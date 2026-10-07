@@ -54,16 +54,14 @@ void Server::handleWhois(Client &client, const CommandPairVector &command)
 		string realName = client.getRealName();
 		string host = client.getIpAddr();
 
-		sendNumericReply(client, "311", nick + " " + user + " " + host
-			+ " *" + realName);
+		sendNumericReply(client, "311", nick + " " + user + " " + host + " *" + realName);
 		sendNumericReply(client, "312", nick + " " + name);
 		for (map<string, Channel>::const_iterator ch = channels.begin();
 			 ch != channels.end(); ++ch)
 		{
 			if (ch->second.isClientPresent(client.getFd()))
 			{
-				sendNumericReply(client, "319", nick + " :"
-					+ ch->second.getName());
+				sendNumericReply(client, "319", nick + " :" + ch->second.getName());
 			}
 		}
 		sendNumericReply(client, "318", nick + " :End of /WHOIS list");
@@ -81,16 +79,15 @@ void Server::handleWhois(Client &client, const CommandPairVector &command)
 		string realName = it->second.getRealName();
 		string host = it->second.getIpAddr();
 
-		sendNumericReply(client, "311", nick + " " + user + " " + host
-			+ " *" + realName);
+		sendNumericReply(client, "311", nick + " " + user + " " + host + " *" + realName);
 		sendNumericReply(client, "312", nick + " " + name);
+		cout << "WHOIS: " << nick << " " << user << " " << host << " *" << realName << endl;
 		for (map<string, Channel>::const_iterator ch = channels.begin();
 			 ch != channels.end(); ++ch)
 		{
 			if (ch->second.isClientPresent(it->first))
 			{
-				sendNumericReply(client, "319", nick + " :"
-					+ ch->second.getName());
+				sendNumericReply(client, "319", nick + " :" + ch->second.getName());
 			}
 		}
 		sendNumericReply(client, "318", nick + " :End of /WHOIS list");
