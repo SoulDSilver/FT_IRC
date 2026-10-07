@@ -165,17 +165,6 @@ void Server::removeChannel(const string &channelname)
 	cout << channelname << " have been erase!" << endl;
 }
 
-void Server::pongmessage(int fd, const string &a)
-{
-	string retorno;
-
-	if (!a.empty())
-	{
-		retorno = "PONG " + a + "\r\n";
-		send(fd, retorno.c_str(), retorno.size(), 0);
-	}
-}
-
 size_t Server::channelExists(const string& channelName)
 {
     return channels.count(channelName);
@@ -198,7 +187,7 @@ void Server::sendChannelJoinMessages(const string& channelName, int fd)
 
 void Server::sendTopicMessages(const string& target, int fd)
 {
-    channels.at(target).sendMessge("Envia o Topico do canal se tiver", fd);
+    channels.at(target).sendMessage("Envia o Topico do canal se tiver", fd);
 }
 
 void Server::sendPartMessages(const string &channelName, int fd , const string reason){
@@ -424,10 +413,7 @@ Server::DispatchResult Server::dispatchCommand(Client &client,
 	}
 	if (command.first == "PING")
 	{
-		string token = Parser::getParam(command, PP_TARGET);
-		if (!token.empty() && token[0] == ':')
-			token.erase(0, 1);
-		pongmessage(client.getFd(), token);
+		Commands::PING(*this, Parser::getParam(command, PP_TARGET), client.getFd());
 		return (DISPATCH_OK);
 	}
 	if (command.first == "QUIT")
