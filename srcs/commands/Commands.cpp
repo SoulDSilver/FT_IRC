@@ -9,31 +9,30 @@ void Commands::PING(Server &server, const string &serverName, int fd)
 	server.pongmessage(fd, serverName);
 }
 
-void Commands::PRIVMSG(Server &server, const string &target, const string &message, int fd)
+void Commands::PRIVMSG(Server &server, const string &target, const string &message,  Client &sender)
 {
 	cout << GRE << "target" << target << WHI << endl;
 	if (!server.channelExists(target))
 		return;
 
-	if (!server.isClientInChannel(target, fd))
+	if (!server.isClientInChannel(target, sender.getFd()))
 		return;
 
-	server.broadcastToChannel(target, message, fd);
+	server.broadcastToChannel(target, message, sender);
 }
 
-void Commands::JOIN(Server &server, const string &channelName, int fd)
+void Commands::JOIN(Server &server, const string &channelName,  Client &client)
 {
-	string menssage = ":<nick>!<user>@<host> JOIN :#" + channelName;
 	if (server.channelExists(channelName) == 0)
 	{
-		server.createChannel(channelName, fd);
-		server.broadcastToChannel(channelName, menssage, fd);
+		server.createChannel(channelName, client);
+		server.sendJoinMessages(channelName, client);
 	}
 	else if (server.channelExists(channelName) == 1)
 	{
-		server.addClientToChannel(channelName, fd);
-		server.broadcastToChannel(channelName, menssage, fd);
-		cout << GRE << "Client <" << fd << "> Joined Channel <" << channelName << ">" << WHI << endl;
+		server.addClientToChannel(channelName, client.getFd());
+		server.sendJoinMessages(channelName, client);
+		cout << GRE << "Client <" << client.getFd() << "> Joined Channel <" << channelName << ">" << WHI << endl;
 	}
 }
 

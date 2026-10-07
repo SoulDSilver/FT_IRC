@@ -182,17 +182,17 @@ void Channel::sendPartMessage(const Client &client, const string &reason) const
 		send(it->first, message.c_str(), message.length(), 0);
 }
 
-void Channel::broadcastMessage(const string &message, int senderFd) const
+void Channel::broadcastMessage(const string &message, const Client &sender) const
 {
 	string sms;
-	map<int, Client>::const_iterator sender = clients.find(senderFd);
-	if (sender == clients.end())
+	map<int, Client>::const_iterator senderIter = clients.find(sender.getFd());
+	if (senderIter == clients.end())
 		return;
 	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		if (it->first != senderFd)
+		if (it->first != sender.getFd())
 		{
-			sms = ":" + sender->second.getNick() + "!" + sender->second.getUsername() + "@" + sender->second.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
+			sms = ":" + sender.getNick() + "!" + sender.getUsername() + "@" + sender.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
 			send(it->first, sms.c_str(), sms.length(), 0);
 		}
 	}

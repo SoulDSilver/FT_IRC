@@ -16,22 +16,7 @@ void Server::handleJoin(Client &client, const CommandPairVector &command)
 		sendNumericReply(client, "403", channelName + " :No such channel");
 		return;
 	}
-
-	if (channels.count(channelName) == 0)
-	{
-		createChannel(channelName, client);
-		channels.at(channelName).sendJoinMessages(client);
-		cout << GRE << "Client <" << client.getFd() << "> Joined Channel <"
-			 << channelName << ">" << WHI << endl;
-		return;
-	}
-
-	if (!isClientInChannel(channelName, client.getFd()))
-		channels.at(channelName).addClient(client);
-
-	channels.at(channelName).sendJoinMessages(client);
-	cout << GRE << "Client <" << client.getFd() << "> Joined Channel <"
-		 << channelName << ">" << WHI << endl;
+	Commands::JOIN(*this, channelName, client);
 }
 
 void Server::handlePart(Client &client, const CommandPairVector &command)
@@ -96,7 +81,7 @@ void Server::handlePrivmsg(Client &client, const CommandPairVector &command)
 				+ " :Cannot send to channel");
 			return;
 		}
-		channels.at(target).broadcastMessage(message, client.getFd());
+		channels.at(target).broadcastMessage(message, client);
 		return;
 	}
 
