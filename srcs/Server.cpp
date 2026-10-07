@@ -165,6 +165,50 @@ void Server::removeChannel(const string &channelname)
 	cout << channelname << " have been erase!" << endl;
 }
 
+void Server::pongmessage(int fd, const string &a)
+{
+	string retorno;
+
+	if (!a.empty())
+	{
+		retorno = "PONG " + a + "\r\n";
+		send(fd, retorno.c_str(), retorno.size(), 0);
+	}
+}
+
+size_t Server::channelExists(const string& channelName)
+{
+    return channels.count(channelName);
+}
+
+void Server::broadcastToChannel(const string& channelName, const string& message, int fd)
+{
+    channels.at(channelName).broadcastMessage(message, fd);
+}
+
+void Server::addClientToChannel(const string& channelName, int fd)
+{
+    channels.at(channelName).addClient(clients.at(fd));
+}
+
+void Server::sendChannelJoinMessages(const string& channelName, int fd)
+{
+	channels.at(channelName).sendJoinMessages(clients.at(fd));
+}
+
+void Server::sendTopicMessages(const string& target, int fd)
+{
+    channels.at(target).sendMessge("Envia o Topico do canal se tiver", fd);
+}
+
+void Server::sendPartMessages(const string &channelName, int fd , const string reason){
+	channels.at(channelName).sendPartMessage(clients.at(fd), reason);
+	channels.at(channelName).removeClient(clients.at(fd));
+	cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
+	if (channels.at(channelName).have_any_client())
+		removeChannel(channelName);
+}
+
 void Server::create_socket()
 {
 	int yes;
@@ -197,8 +241,9 @@ void Server::create_socket()
 	fds.push_back(NewP);
 }
 
-void Server::createChannel(const string &channelname, Client &client)
+void Server::createChannel(const string &channelname,  int fd)
 {
+	Client client = clients.at(fd);
 	Channel channel(channelname, *this, client);
 	channels.insert(make_pair(channelname, channel));
 	cout << GRE << "Channel <" << channelname << "> Created by Client <" << client.getNick() << ">" << WHI << endl;

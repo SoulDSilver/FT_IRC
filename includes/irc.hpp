@@ -4,9 +4,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <string>
+#include <utility>
+#include <cctype>
 #include <utility>
 #include <cctype>
 #include <cstring>
@@ -55,4 +58,4 @@ typedef pair<ParsedParamId, string> CommandPair;
 typedef pair<string, vector<CommandPair> > CommandPairVector;
 typedef vector<CommandPairVector> CommandList;
 
-#endif 
+#endif

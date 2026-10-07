@@ -1,5 +1,4 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
 
 #include "irc.hpp"
 
@@ -62,4 +61,4 @@ public:
 };
 
 ostream &operator<<(std::ostream &stream, const Client &cl);
-#endif
+

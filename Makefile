@@ -27,7 +27,7 @@ SRCS =  $(addprefix srcs/, main.cpp Commands.cpp Parser.cpp Channel.cpp Client.c
 			commands_files/Messaging.cpp )
 OBJDIR = objs
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -Iincludes
+CXXFLAGS =-std=c++98 -Iincludes
 CXX = c++
 
 all: $(NAME)

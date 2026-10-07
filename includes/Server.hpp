@@ -3,6 +3,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Commands.hpp"
 
 #define MAXPENDCONN 10
 
@@ -62,6 +63,23 @@ public:
 	const string &getPassword() const;
 	int getListenPort() const;
 	int getListenFd() const;
+	
+	// utils 
+	void createChannel(const string &channelName, int fd);
+    void addNewClient();
+    void handleClientData(int client_fd);
+    void removeClients(int client_fd);
+	void welcomeMessage(Client &client);
+	void pongmessage(int fd, const string &a);
+	void removeChannel(const string &channelname);
+
+	void addClientToChannel(const string &channelName, int fd);
+	void sendChannelJoinMessages(const string &channelName, int fd);
+	size_t channelExists(const string& channelName);
+	bool isClientInChannel(const string &channelName, int client_fd) const;
+    void broadcastToChannel(const string& channelName, const string& message, int fd);
+	void sendTopicMessages(const string& target, int fd);
+	void sendPartMessages(const string &channelName, int fd , const string reason);
 };
 
 #endif
