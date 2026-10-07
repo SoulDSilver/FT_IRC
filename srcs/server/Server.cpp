@@ -375,6 +375,18 @@ void Server::run()
 	cout << "The Server Closed!" << endl;
 }
 
+void Server::actualizenicks(const string &oldNick, const string &newNick)
+{
+	if (clientsByNick.count(oldNick) == 0)
+		return;
+	Client &client = clientsByNick.at(oldNick);
+
+	clients.at(client.getFd()).setNick(newNick);
+	client.setNick(newNick);
+
+}
+
+
 Server::DispatchResult Server::dispatchCommand(Client &client,
 											   const CommandPairVector &command)
 {

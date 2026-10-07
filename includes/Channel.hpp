@@ -18,7 +18,7 @@ private:
     bool TopicRestricted;
 
     map<int, Client> clients;
-    map<std::string, int> clientsByNick;
+    map<string, int> clientsByNick;
     map<int, Client> operators;
 
     vector<int> invitedUsers;
@@ -54,6 +54,7 @@ public:
     void addSetting(const string &setting, const string &value);
     void listclients() const;
 
+    void actualizenicks(const string &oldNick, const string &newNick);
     void sendJoinMessages(const Client &client) const;
     void sendPartMessage(const Client &client, const string &reason) const;
     void broadcastMessage(const string &message, const Client &sender) const;

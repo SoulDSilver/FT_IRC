@@ -95,19 +95,20 @@ void Server::handleNick(Client &client, const CommandPairVector &command)
 		return;
 	}
 
-	for (map<int, Client>::const_iterator it = clients.begin();
-		 it != clients.end(); ++it)
+	if (clientsByNick.count(nickname) > 0)
 	{
-		if (it->first != client.getFd() && it->second.getNick() == nickname)
-		{
-			sendNumericReply(client, "433",
-							 nickname + " :Nickname is already in use");
-			return;
-		}
+		sendNumericReply(client, "433", nickname + " :Nickname is already in use");
+		return;
 	}
 
 	client.setNick(nickname);
 	client.setHasNick();
+	actualizenicks(client.getNick(), nickname);
+	for (map<string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+	{
+		if(it->second.isClientPresent(client.getFd()))
+			it->second.actualizenicks(client.getNick(), nickname);
+	}
 	if (checkClientRegistered(client) == true)
 	{
 		client.setRegistered();

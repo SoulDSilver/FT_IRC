@@ -73,7 +73,7 @@ public:
 	void sendPartMessages(const string &channelName, int fd, const string reason);
 	void createChannel(const string &channelName, Client &client);
 	void sendChannelJoinMessages(const string &channelName, int fd);
-
+	void actualizenicks(const string &oldNick, const string &newNick);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
 	void welcomeMessage(Client &client);
 
@@ -81,7 +81,7 @@ public:
 
 	bool checkClientRegistered(Client &client);
 
-	const Channel *getChannel(const string &channelName) const ;
+	const Channel *getChannel(const string &channelName) const;
 	const Client *getClientByNick(const string &nick) const;
 };
 

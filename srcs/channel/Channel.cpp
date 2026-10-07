@@ -2,14 +2,12 @@
 #include "Server.hpp"
 
 Channel::Channel(const string &name, Server &server,
-				 const Client &client) : server(server)
+	const Client &client) : server(server)
 {
 	settings.insert(make_pair("Name", name));
 	settings.insert(make_pair("Password", ""));
 	settings.insert(make_pair("Topic", ""));
-
 	settings.insert(make_pair("Permission", "Public"));
-
 	Limit = 0;
 	InviteOnly = false;
 	OnlyOperators = false;
@@ -19,9 +17,8 @@ Channel::Channel(const string &name, Server &server,
 	this->operators.insert(make_pair(client.getFd(), client));
 }
 
-Channel::Channel(const Channel &other)
-	: settings(other.settings), server(other.server),
-	  clients(other.clients), operators(other.operators)
+Channel::Channel(const Channel &other) : settings(other.settings),
+	server(other.server), clients(other.clients), operators(other.operators)
 {
 }
 
@@ -37,8 +34,8 @@ Channel &Channel::operator=(const Channel &other)
 
 bool Channel::operator==(const Channel &other)
 {
-	return (this->settings.find("Name") != this->settings.end() &&
-			this->settings.at("Name") == other.settings.at("Name"));
+	return (this->settings.find("Name") != this->settings.end()
+		&& this->settings.at("Name") == other.settings.at("Name"));
 }
 
 Channel::~Channel()
@@ -82,7 +79,7 @@ void Channel::setPassword(const string &password)
 
 bool Channel::have_any_client() const
 {
-	return clients.empty();
+	return (clients.empty());
 }
 
 void Channel::addClient(const Client &client)
@@ -95,23 +92,15 @@ void Channel::removeClient(const Client &client)
 {
 	clients.erase(client.getFd());
 	clientsByNick.erase(client.getNick());
-
 	if (isOperator(client.getFd()))
 		removeOperator(client);
 }
 
 bool Channel::isOperator(int fd) const
 {
-	return operators.count(fd) == 1;
+	return (operators.count(fd) == 1);
 }
 
-void Channel::listclients() const
-{
-	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
-		cout << "Client FD: " << it->first << ", Nick: " << it->second.getNick() << ", Username: " << it->second.getUsername() << endl;
-	if (clients.empty())
-		cout << "No clients in the channel." << endl;
-}
 
 void Channel::addOperator(const Client &client)
 {
@@ -142,9 +131,18 @@ void Channel::addInvitedUser(int a)
 
 void Channel::removeInvitedUser(const int &a)
 {
-	vector<int>::iterator it = find(invitedUsers.begin(), invitedUsers.end(), a);
+	vector<int>::iterator it = find(invitedUsers.begin(), invitedUsers.end(),
+			a);
 	if (it != invitedUsers.end())
 		invitedUsers.erase(it);
+}
+
+void Channel::actualizenicks(const string &oldNick, const string &newNick)
+{
+	Client &client = clients.at(clientsByNick.at(oldNick));
+	client.setNick(newNick);
+	clientsByNick.erase(oldNick);
+	clientsByNick.insert(make_pair(newNick, client.getFd()));
 }
 
 void Channel::sendJoinMessages(const Client &client) const
@@ -152,10 +150,12 @@ void Channel::sendJoinMessages(const Client &client) const
 	string host = client.getIpAddr();
 	if (host.empty())
 		host = "host";
-	string prefix = ":" + client.getNick() + "!" + client.getUsername() + "@" + host;
+	string prefix = ":" + client.getNick() + "!" + client.getUsername() + "@"
+		+ host;
 	string names;
 
-	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+	for (map<int,
+		Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 	{
 		if (!names.empty())
 			names += " ";
@@ -165,9 +165,12 @@ void Channel::sendJoinMessages(const Client &client) const
 	}
 
 	string messages = prefix + " JOIN :" + settings.at("Name") + "\r\n";
-	messages += ":" + server.getName() + " 331 " + client.getNick() + " " + settings.at("Name") + " :No topic is set\r\n";
-	messages += ":" + server.getName() + " 353 " + client.getNick() + " = " + settings.at("Name") + " :" + names + "\r\n";
-	messages += ":" + server.getName() + " 366 " + client.getNick() + " " + settings.at("Name") + " :End of /NAMES list\r\n";
+	messages += ":" + server.getName() + " 331 " + client.getNick() + " "
+		+ settings.at("Name") + " :No topic is set\r\n";
+	messages += ":" + server.getName() + " 353 " + client.getNick() + " = "
+		+ settings.at("Name") + " :" + names + "\r\n";
+	messages += ":" + server.getName() + " 366 " + client.getNick() + " "
+		+ settings.at("Name") + " :End of /NAMES list\r\n";
 	send(client.getFd(), messages.c_str(), messages.length(), 0);
 }
 
@@ -176,24 +179,30 @@ void Channel::sendPartMessage(const Client &client, const string &reason) const
 	string host = client.getIpAddr();
 	if (host.empty())
 		host = "host";
-	string message = ":" + client.getNick() + "!" + client.getUsername() + "@" + host;
+	string message = ":" + client.getNick() + "!" + client.getUsername() + "@"
+		+ host;
 	message += " PART " + settings.at("Name");
 	if (!reason.empty())
 		message += " :" + reason;
 	message += "\r\n";
 
-	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+	for (map<int,
+		Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 		send(it->first, message.c_str(), message.length(), 0);
 }
 
-void Channel::broadcastMessage(const string &message, const Client &sender) const
+void Channel::broadcastMessage(const string &message,
+	const Client &sender) const
 {
 	string sms;
 	int senderFd = sender.getFd();
 	if (clients.find(sender.getFd()) == clients.end())
-		return;
-	sms = ":" + sender.getNick() + "!" + sender.getUsername() + "@" + sender.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
-	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
+		return ;
+	sms = ":" + sender.getNick() + "!" + sender.getUsername() + "@"
+		+ sender.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :"
+		+ message + "\r\n";
+	for (map<int,
+		Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
 		if (it->first != senderFd)
 			send(it->first, sms.c_str(), sms.length(), 0);
 }
@@ -209,27 +218,25 @@ void Channel::sendMessage(const string &message, int senderFd) const
 	cout << "MSG" << endl;
 	map<int, Client>::const_iterator sender = clients.find(senderFd);
 	if (sender == clients.end())
-		return;
+		return ;
 	sms = ":" + sender->second.getNick() + " :" + message + "\r\n";
 	send(senderFd, sms.c_str(), sms.length(), 0);
 }
 
-
-
 const Client *Channel::findClientByNick(const string &nick) const
 {
-	if(nick.empty())
-		return NULL;
-   map<std::string, int>::const_iterator nickIt = clientsByNick.find(nick);
-   cout << "nickIt: " << (nickIt != clientsByNick.end() ? nickIt->first : "not found") << endl;
-    if (nickIt == clientsByNick.end())
-        return NULL;
+	if (nick.empty())
+		return (NULL);
+	map<std::string, int>::const_iterator nickIt = clientsByNick.find(nick);
+	cout << "nickIt: " << (nickIt != clientsByNick.end() ? nickIt->first : "not found") << endl;
+	if (nickIt == clientsByNick.end())
+		return (NULL);
 
-    map<int, Client>::const_iterator clientIt = clients.find(nickIt->second);
-    if (clientIt == clients.end())
-        return NULL;
+	map<int, Client>::const_iterator clientIt = clients.find(nickIt->second);
+	if (clientIt == clients.end())
+		return (NULL);
 
-    return &clientIt->second;
+	return (&clientIt->second);
 }
 
 //  /connect localhost 1024 44
