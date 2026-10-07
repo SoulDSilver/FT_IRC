@@ -9,16 +9,42 @@ void Commands::PING(Server &server, const string &serverName, int fd)
 	server.pongmessage(fd, serverName);
 }
 
-void Commands::PRIVMSG(Server &server, const string &target, const string &message,  Client &sender)
+void Commands::PRIVMSG(Server &server, const string &target, const string &message,  Client &client)
 {
-	cout << GRE << "target" << target << WHI << endl;
-	if (!server.channelExists(target))
-		return;
+	if (target[0] == '#')
+	{
+		if (server.channelExists(target) == 0)
+		{
+			server.sendNumericReply(client, "403", target + " :No such channel");
+			return;
+		}
+		if (!server.isClientInChannel(target, client.getFd()))
+		{
+			server.sendNumericReply(client, "404", target + " :Cannot send to channel");
+			return;
+		}
 
-	if (!server.isClientInChannel(target, sender.getFd()))
+		const Channel *channel = server.getChannel(target);
+	
+		channel->broadcastMessage(message, client);
 		return;
+	}
 
-	server.broadcastToChannel(target, message, sender);
+	
+	const Client *clientPtr = server.getClientByNick(target);
+	
+
+	if (clientPtr == NULL)
+	{
+		cout << RED << "Client <" << client.getFd() << "> tried to send message to non-existent nick <" << target << ">" << WHI << endl;
+		server.sendNumericReply(client, "401", target + " :No such nick/channel");
+		return;
+	}
+
+	string line = ":" + client.getNick() + "!" + client.getUsername() + "@" + client.getIpAddr() + " PRIVMSG " + target + " :" + message + "\r\n";
+	send(clientPtr->getFd(), line.c_str(), line.length(), 0);
+	cout << GRE << "Client <" << client.getFd() << "> Sent Message to <" << target << ">: " << message << WHI << endl;
+	return;
 }
 
 void Commands::JOIN(Server &server, const string &channelName,  Client &client)
@@ -26,12 +52,12 @@ void Commands::JOIN(Server &server, const string &channelName,  Client &client)
 	if (server.channelExists(channelName) == 0)
 	{
 		server.createChannel(channelName, client);
-		server.sendJoinMessages(channelName, client);
+		server.sendChannelJoinMessages(channelName, client.getFd());
 	}
 	else if (server.channelExists(channelName) == 1)
 	{
 		server.addClientToChannel(channelName, client.getFd());
-		server.sendJoinMessages(channelName, client);
+		server.sendChannelJoinMessages(channelName, client.getFd());
 		cout << GRE << "Client <" << client.getFd() << "> Joined Channel <" << channelName << ">" << WHI << endl;
 	}
 }
@@ -46,9 +72,8 @@ void Commands::PART(Server &server, string &channelName, int fd)
 		channelName = channelName.substr(0, reasonPosition);
 	}
 	if (server.channelExists(channelName) == 1 && server.isClientInChannel(channelName, fd))
-	{
 		server.sendPartMessages(channelName, fd, reason);
-	}
+	
 }
 
 void Commands::TOPIC(Server &server, const string &target, int fd)
