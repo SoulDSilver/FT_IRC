@@ -15,6 +15,7 @@ Channel::Channel(const string &name, Server &server,
 	OnlyOperators = false;
 	TopicRestricted = false;
 	this->clients.insert(make_pair(client.getFd(), client));
+	this->clientsByNick.insert(make_pair(client.getNick(), client.getFd()));
 	this->operators.insert(make_pair(client.getFd(), client));
 }
 
@@ -87,11 +88,14 @@ bool Channel::have_any_client() const
 void Channel::addClient(const Client &client)
 {
 	clients.insert(make_pair(client.getFd(), client));
+	clientsByNick.insert(make_pair(client.getNick(), client.getFd()));
 }
 
 void Channel::removeClient(const Client &client)
 {
 	clients.erase(client.getFd());
+	clientsByNick.erase(client.getNick());
+
 	if (isOperator(client.getFd()))
 		removeOperator(client);
 }
@@ -185,17 +189,13 @@ void Channel::sendPartMessage(const Client &client, const string &reason) const
 void Channel::broadcastMessage(const string &message, const Client &sender) const
 {
 	string sms;
-	map<int, Client>::const_iterator senderIter = clients.find(sender.getFd());
-	if (senderIter == clients.end())
+	int senderFd = sender.getFd();
+	if (clients.find(sender.getFd()) == clients.end())
 		return;
+	sms = ":" + sender.getNick() + "!" + sender.getUsername() + "@" + sender.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
 	for (map<int, Client>::const_iterator it = clients.begin(); it != clients.end(); ++it)
-	{
-		if (it->first != sender.getFd())
-		{
-			sms = ":" + sender.getNick() + "!" + sender.getUsername() + "@" + sender.getIpAddr() + " PRIVMSG " + settings.at("Name") + " :" + message + "\r\n";
+		if (it->first != senderFd)
 			send(it->first, sms.c_str(), sms.length(), 0);
-		}
-	}
 }
 
 bool Channel::isClientPresent(int fd) const
@@ -212,6 +212,24 @@ void Channel::sendMessage(const string &message, int senderFd) const
 		return;
 	sms = ":" + sender->second.getNick() + " :" + message + "\r\n";
 	send(senderFd, sms.c_str(), sms.length(), 0);
-	
 }
+
+
+
+const Client *Channel::findClientByNick(const string &nick) const
+{
+	if(nick.empty())
+		return NULL;
+   map<std::string, int>::const_iterator nickIt = clientsByNick.find(nick);
+   cout << "nickIt: " << (nickIt != clientsByNick.end() ? nickIt->first : "not found") << endl;
+    if (nickIt == clientsByNick.end())
+        return NULL;
+
+    map<int, Client>::const_iterator clientIt = clients.find(nickIt->second);
+    if (clientIt == clients.end())
+        return NULL;
+
+    return &clientIt->second;
+}
+
 //  /connect localhost 1024 44

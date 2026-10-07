@@ -18,6 +18,7 @@ private:
     bool TopicRestricted;
 
     map<int, Client> clients;
+    map<std::string, int> clientsByNick;
     map<int, Client> operators;
 
     vector<int> invitedUsers;
@@ -57,6 +58,8 @@ public:
     void sendPartMessage(const Client &client, const string &reason) const;
     void broadcastMessage(const string &message, const Client &sender) const;
     void sendMessage(const string &message, int senderFd) const;
+
+    const Client *findClientByNick(const std::string &nick) const;
 };
 
 #endif
