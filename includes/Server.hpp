@@ -31,9 +31,7 @@ private:
 	void handleClientData(int client_fd);
 	void removeClients(int client_fd);
 	void welcomeMessage(Client &client);
-	void pongmessage(int fd, const string &token);
 	void handleCap(Client &client, const CommandPairVector &command);
-	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void removeChannel(const string &channelname);
 	enum DispatchResult { DISPATCH_OK, DISPATCH_QUIT, DISPATCH_UNKNOWN };
 	DispatchResult dispatchCommand(Client &client, const CommandPairVector &command);
@@ -48,6 +46,8 @@ private:
     void handleWhois(Client &client, const CommandPairVector &command);
     void handleMotd(Client &client, const CommandPairVector &command);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
+	bool checkClientRegistered(Client &client);
+	void sendChannelJoinMessages(const string &channelName, int fd);
 
 public:
 
@@ -58,28 +58,20 @@ public:
 
 	void run();
 	static void signalHandler(int signum);
-	bool checkClientRegistered(Client &client);
 	const string &getName() const;
 	const string &getPassword() const;
 	int getListenPort() const;
 	int getListenFd() const;
-	
-	// utils 
-	void createChannel(const string &channelName, int fd);
-    void addNewClient();
-    void handleClientData(int client_fd);
-    void removeClients(int client_fd);
-	void welcomeMessage(Client &client);
-	void pongmessage(int fd, const string &a);
-	void removeChannel(const string &channelname);
 
+	// Operations used by the Commands interface.
+	void pongmessage(int fd, const string &token);
+	void createChannel(const string &channelName, int fd);
 	void addClientToChannel(const string &channelName, int fd);
-	void sendChannelJoinMessages(const string &channelName, int fd);
-	size_t channelExists(const string& channelName);
+	size_t channelExists(const string &channelName);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
-    void broadcastToChannel(const string& channelName, const string& message, int fd);
-	void sendTopicMessages(const string& target, int fd);
-	void sendPartMessages(const string &channelName, int fd , const string reason);
+	void broadcastToChannel(const string &channelName, const string &message, int fd);
+	void sendTopicMessages(const string &target, int fd);
+	void sendPartMessages(const string &channelName, int fd, const string reason);
 };
 
 #endif
