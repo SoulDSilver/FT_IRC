@@ -200,6 +200,12 @@ void Server::addClientToChannel(const string &channelName, int fd)
 	channels.at(channelName).addClient(clients.at(fd));
 }
 
+void Server::addClientToNickMap(const string &nick, const Client &client)
+{
+	clientsByNick.insert(make_pair(nick, client));
+}
+
+
 void Server::sendChannelJoinMessages(const string &channelName, int fd)
 {
 	channels.at(channelName).sendJoinMessages(clients.at(fd));
@@ -314,9 +320,6 @@ void Server::handleClientData(int fd)
 			removeClients(fd);
 			return;
 		}
-		if (checkClientRegistered(client->second))
-			clientsByNick.insert(make_pair(client->second.getNick(), client->second));
-
 		string data(buff);
 		client->second.appendInput(data);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI;
@@ -438,3 +441,10 @@ Server::DispatchResult Server::dispatchCommand(Client &client,
 	}
 	return (DISPATCH_UNKNOWN);
 }
+
+
+/*
+
+/connect localhost 1024 44
+
+*/

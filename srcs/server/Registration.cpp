@@ -81,7 +81,7 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 		client.setRegistered();
 		client.setWelcome();
 		welcomeMessage(client);
-		cout << GRE << "Client <" << client.getFd() << "> Registered with Password: " << parameters << WHI << endl;
+		addClientToNickMap(client.getNick(), client);
 	}
 }
 
@@ -113,7 +113,7 @@ void Server::handleNick(Client &client, const CommandPairVector &command)
 		client.setRegistered();
 		client.setWelcome();
 		welcomeMessage(client);
-		cout << GRE << "Client <" << client.getFd() << "> Registered with Nickname: " << nickname << WHI << endl;
+		addClientToNickMap(client.getNick(), client);
 	}
 }
 
@@ -145,6 +145,7 @@ void Server::handleUser(Client &client, const CommandPairVector &command)
 		client.setWelcome();
 		welcomeMessage(client);
 		cout << GRE << "Client <" << client.getFd() << "> Registered with Username: " << username << WHI << endl;
+		addClientToNickMap(client.getNick(), client);
 	}
 }
 

@@ -65,6 +65,7 @@ public:
 	// Operations used by the Commands interface.
 	void pongmessage(int fd, const string &token);
 	void addClientToChannel(const string &channelName, int fd);
+	void addClientToNickMap(const string &nick, const Client &client);
 	size_t channelExists(const string &channelName);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
 	void broadcastToChannel(const string &channelName, const string &message, const Client &sender);
