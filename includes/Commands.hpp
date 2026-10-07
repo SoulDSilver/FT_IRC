@@ -18,7 +18,7 @@ class Commands
         ~Commands();
         
     public:
-        static void processCommands(Server& server, const CommandList& parsedCommands, int fd)
+        static void processCommands(Server& server, const CommandList& parsedCommands, int fd);
         
         static void TOPIC(Server& server, const string& target, int fd);
         static void MODE( Channel& channel, const string& mode);
