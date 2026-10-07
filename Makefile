@@ -20,11 +20,20 @@ CYAN = \033[0;36m
 NAME = ircserv
 HEADERS = $(addprefix includes/, Channel.hpp Client.hpp Server.hpp \
 			irc.hpp Commands.hpp Parser.hpp)
-SRCS =  $(addprefix srcs/, main.cpp parser/Parser.cpp channel/Channel.cpp \
-			client/Client.cpp commands/Commands.cpp \
-			server/Registration.cpp server/Server.cpp \
-			commands/ChannelCommands.cpp commands/OperatorCommands.cpp \
-			commands/Messaging.cpp )
+SRCS =  $(addprefix srcs/, \
+		main.cpp\
+		parser/Parser.cpp \
+		channel/Channel.cpp \
+		client/Client.cpp \
+		server/Server.cpp \
+		server/Registration.cpp \
+		commands/Commands.cpp \
+		commands/Messaging.cpp \
+		commands/ChannelCommands.cpp \
+		commands/OperatorCommands.cpp \
+		 )
+
+
 OBJDIR = objs
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 CXXFLAGS =-std=c++98 -Iincludes
