@@ -26,31 +26,31 @@ private:
 	map<string, Channel> channels;
 
 	void closeFds();
-	void createChannel(const string &channelName, Client &client);
 	void addNewClient();
 	void handleClientData(int client_fd);
 	void removeClients(int client_fd);
-	void welcomeMessage(Client &client);
 	void handleCap(Client &client, const CommandPairVector &command);
-	void removeChannel(const string &channelname);
-	enum DispatchResult { DISPATCH_OK, DISPATCH_QUIT, DISPATCH_UNKNOWN };
+	enum DispatchResult
+	{
+		DISPATCH_OK,
+		DISPATCH_QUIT,
+		DISPATCH_UNKNOWN
+	};
 	DispatchResult dispatchCommand(Client &client, const CommandPairVector &command);
-    void handlePass(Client &client, const CommandPairVector &command);
-    void handleNick(Client &client, const CommandPairVector &command);
-    void handleUser(Client &client, const CommandPairVector &command);
-    void handleQuit(Client &client, const CommandPairVector &command);
-    void handleJoin(Client &client, const CommandPairVector &command);
-    void handlePart(Client &client, const CommandPairVector &command);
-    void handlePrivmsg(Client &client, const CommandPairVector &command);
-    void handleMode(Client &client, const CommandPairVector &command);
-    void handleWhois(Client &client, const CommandPairVector &command);
-    void handleMotd(Client &client, const CommandPairVector &command);
+	void handlePass(Client &client, const CommandPairVector &command);
+	void handleNick(Client &client, const CommandPairVector &command);
+	void handleUser(Client &client, const CommandPairVector &command);
+	void handleQuit(Client &client, const CommandPairVector &command);
+	void handleJoin(Client &client, const CommandPairVector &command);
+	void handlePart(Client &client, const CommandPairVector &command);
+	void handlePrivmsg(Client &client, const CommandPairVector &command);
+	void handleMode(Client &client, const CommandPairVector &command);
+	void handleWhois(Client &client, const CommandPairVector &command);
+	void handleMotd(Client &client, const CommandPairVector &command);
 	void sendNumericReply(Client &client, const string &code, const string &parameters);
-	bool checkClientRegistered(Client &client);
 	void sendChannelJoinMessages(const string &channelName, int fd);
 
 public:
-
 	Server(int port, const string &password);
 	Server(const Server &other);
 	Server &operator=(const Server &other);
@@ -69,10 +69,17 @@ public:
 	void addClientToChannel(const string &channelName, int fd);
 	size_t channelExists(const string &channelName);
 	bool isClientInChannel(const string &channelName, int client_fd) const;
-	void broadcastToChannel(const string &channelName, const string &message, int fd);
+	void broadcastToChannel(const string &channelName, const string &message, const Client &sender);
 	void sendTopicMessages(const string &target, int fd);
 	void sendPartMessages(const string &channelName, int fd, const string reason);
+	void sendJoinMessages(const string &channelName, const Client &client);
+	void createChannel(const string &channelName, Client &client);
+
+	void welcomeMessage(Client &client);
+
+	void removeChannel(const string &channelname);
+
+	bool checkClientRegistered(Client &client);
 };
 
 #endif
-

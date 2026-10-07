@@ -1,5 +1,5 @@
-#include "Server.hpp"
 #include "Parser.hpp"
+#include "Server.hpp"
 
 Server::Server() : listen_port(0), password(""), listen_fd(-1)
 {
@@ -80,8 +80,7 @@ void Server::signalHandler(int signum)
 
 void Server::removeClients(int fd)
 {
-	for (vector<struct pollfd>::iterator it = this->fds.begin();
-		 it != this->fds.end(); ++it)
+	for (vector<struct pollfd>::iterator it = this->fds.begin(); it != this->fds.end(); ++it)
 	{
 		if (it->fd == fd)
 		{
@@ -90,7 +89,9 @@ void Server::removeClients(int fd)
 		}
 	}
 	// Remove the client from every channel it belongs to.
-	for (map<string, Channel>::iterator it = this->channels.begin(); it != this->channels.end(); ++it)
+	for (map<string,
+			 Channel>::iterator it = this->channels.begin();
+		 it != this->channels.end(); ++it)
 		if (it->second.isClientPresent(fd))
 			it->second.removeClient(clients.at(fd));
 	close(fd);
@@ -99,43 +100,41 @@ void Server::removeClients(int fd)
 
 void Server::welcomeMessage(Client &client)
 {
-	string prefix = client.getNick() + "!" + client.getUsername() + "@"
-		+ client.getIpAddr();
+	string prefix;
 	string burst;
 
-	burst = ":" + name + " 001 " + client.getNick()
-		+ " :Welcome to the IRC Network " + prefix + "\r\n";
-	burst += ":" + name + " 002 " + client.getNick()
-		+ " :Your host is " + name + ", running ircd-1.0\r\n";
-	burst += ":" + name + " 003 " + client.getNick()
-		+ " :This server was created at the start of the session\r\n";
-	burst += ":" + name + " 004 " + client.getNick() + " " + name
-		+ " ircd-1.0 o o\r\n";
-
+	prefix = client.getNick() + "!" + client.getUsername() + "@" + client.getIpAddr();
+	burst = ":" + name + " 001 " + client.getNick() + " :Welcome to the IRC Network " + prefix + "\r\n";
+	burst += ":" + name + " 002 " + client.getNick() + " :Your host is " + name + ", running ircd-1.0\r\n";
+	burst += ":" + name + " 003 " + client.getNick() + " :This server was created at the start of the session\r\n";
+	burst += ":" + name + " 004 " + client.getNick() + " " + name + " ircd-1.0 o o\r\n";
 	send(client.getFd(), burst.c_str(), burst.length(), 0);
 }
 
 void Server::pongmessage(int fd, const string &token)
 {
+	string reply;
+
 	if (token.empty())
 		return;
-
-	string reply = ":" + name + " PONG " + token + "\r\n";
+	reply = ":" + name + " PONG " + token + "\r\n";
 	send(fd, reply.c_str(), reply.length(), 0);
 }
 
 void Server::handleCap(Client &client, const CommandPairVector &command)
 {
-	string subcommand = Parser::getParam(command, PP_TARGET);
+	string subcommand;
+	string reply;
 
+	subcommand = Parser::getParam(command, PP_TARGET);
 	if (subcommand == "LS" || subcommand == "NEW" || subcommand == "LIST")
 	{
-		string reply = ":" + name + " CAP * LS :\r\n";
+		reply = ":" + name + " CAP * LS :\r\n";
 		send(client.getFd(), reply.c_str(), reply.length(), 0);
 	}
 	else if (subcommand == "REQ")
 	{
-		string reply = ":" + name + " CAP * NAK :\r\n";
+		reply = ":" + name + " CAP * NAK :\r\n";
 		send(client.getFd(), reply.c_str(), reply.length(), 0);
 	}
 }
@@ -153,10 +152,9 @@ bool Server::isClientInChannel(const string &channelName, int client_fd) const
 
 bool Server::checkClientRegistered(Client &client)
 {
-	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted()
-		&& client.isRegistered() == false && client.hasWelcome() == false)
-		return true;
-	return false;
+	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false && client.hasWelcome() == false)
+		return (true);
+	return (false);
 }
 
 void Server::removeChannel(const string &channelname)
@@ -165,37 +163,46 @@ void Server::removeChannel(const string &channelname)
 	cout << channelname << " have been erase!" << endl;
 }
 
-size_t Server::channelExists(const string& channelName)
+size_t Server::channelExists(const string &channelName)
 {
-    return channels.count(channelName);
+	return (channels.count(channelName));
 }
 
-void Server::broadcastToChannel(const string& channelName, const string& message, int fd)
+void Server::broadcastToChannel(const string &channelName,
+								const string &message, const Client &sender)
 {
-    channels.at(channelName).broadcastMessage(message, fd);
+	channels.at(channelName).broadcastMessage(message, sender);
 }
 
-void Server::addClientToChannel(const string& channelName, int fd)
+void Server::addClientToChannel(const string &channelName, int fd)
 {
-    channels.at(channelName).addClient(clients.at(fd));
+	channels.at(channelName).addClient(clients.at(fd));
 }
 
-void Server::sendChannelJoinMessages(const string& channelName, int fd)
+void Server::sendChannelJoinMessages(const string &channelName, int fd)
 {
 	channels.at(channelName).sendJoinMessages(clients.at(fd));
 }
 
-void Server::sendTopicMessages(const string& target, int fd)
+void Server::sendTopicMessages(const string &target, int fd)
 {
-    channels.at(target).sendMessage("Envia o Topico do canal se tiver", fd);
+	channels.at(target).sendMessage("Envia o Topico do canal se tiver", fd);
 }
 
-void Server::sendPartMessages(const string &channelName, int fd , const string reason){
+void Server::sendPartMessages(const string &channelName, int fd,
+							  const string reason)
+{
 	channels.at(channelName).sendPartMessage(clients.at(fd), reason);
 	channels.at(channelName).removeClient(clients.at(fd));
 	cout << GRE << "Client <" << fd << "> removed from Channel <" << channelName << ">" << WHI << endl;
 	if (channels.at(channelName).have_any_client())
 		removeChannel(channelName);
+}
+
+void Server::sendJoinMessages(const string &channelName, const Client &client)
+{
+	if (channelExists(channelName))
+		channels.at(channelName).sendJoinMessages(client);
 }
 
 void Server::create_socket()
@@ -208,12 +215,10 @@ void Server::create_socket()
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(this->listen_port);
 	addr.sin_family = AF_INET;
-
 	this->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->listen_fd == -1)
 		throw runtime_error("Error creating socket");
 	yes = 1;
-
 	if (setsockopt(this->listen_fd, SOL_SOCKET, SO_REUSEADDR, &yes,
 				   sizeof(yes)) == -1)
 		throw(runtime_error("faild to set option (SO_REUSEADDR) on socket"));
@@ -223,21 +228,18 @@ void Server::create_socket()
 		throw(runtime_error("Error setting socket to non-blocking"));
 	if (listen(this->listen_fd, MAXPENDCONN) == -1)
 		throw(runtime_error("Error listening on socket"));
-
 	NewP.fd = this->listen_fd;
 	NewP.events = POLLIN;
 	NewP.revents = 0;
 	fds.push_back(NewP);
 }
 
-void Server::createChannel(const string &channelname,  int fd)
+void Server::createChannel(const string &channelName, Client &client)
 {
-	Client client = clients.at(fd);
-	Channel channel(channelname, *this, client);
-	channels.insert(make_pair(channelname, channel));
-	cout << GRE << "Channel <" << channelname << "> Created by Client <" << client.getNick() << ">" << WHI << endl;
+	Channel channel(channelName, *this, client);
+	channels.insert(make_pair(channelName, channel));
+	cout << GRE << "Channel <" << channelName << "> Created by Client <" << client.getNick() << ">" << WHI << endl;
 }
-
 void Server::addNewClient()
 {
 	struct sockaddr_in cliadd;
@@ -266,19 +268,20 @@ void Server::addNewClient()
 	cli.setFd(incofd);
 	cli.setIpAddr(inet_ntoa((cliadd.sin_addr)));
 	clients.insert(make_pair(incofd, cli));
-
 	fds.push_back(NewPoll);
-
 	cout << GRE << "Client <" << incofd << "> Connected" << WHI << endl;
 }
 
 void Server::handleClientData(int fd)
 {
 	char buff[1024];
+	ssize_t bytes;
+	string line;
+	CommandList parsed;
+	DispatchResult result;
 
 	memset(buff, 0, sizeof(buff));
-	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1, 0);
-
+	bytes = recv(fd, buff, sizeof(buff) - 1, 0);
 	if (bytes <= 0)
 	{
 		cout << RED << "Client <" << fd << "> Disconnected" << WHI << endl;
@@ -289,44 +292,36 @@ void Server::handleClientData(int fd)
 		map<int, Client>::iterator client = this->clients.find(fd);
 		if (client == this->clients.end())
 			return;
-		if(client->second.passfail == true)
+		if (client->second.passfail == true)
 		{
 			cout << RED << "Client <" << fd << "> Disconnected due to password failure" << WHI << endl;
 			removeClients(fd);
 			return;
 		}
-		string data(buff, static_cast<size_t>(bytes));
-		string cca = data;
-		string line;
-
-		client->second.appendInput(cca);
+		string data(buff);
+		client->second.appendInput(data);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI;
-		for (size_t i = 0; i < cca.size(); i++)
+		for (size_t i = 0; i < data.size(); i++)
 		{
-			if (cca[i] == '\n')
+			if (data[i] == '\n')
 				cout << "<LF>\n";
-			else if (cca[i] == '\r')
+			else if (data[i] == '\r')
 				cout << "<CR>";
 			else
-				cout << cca[i];
+				cout << data[i];
 		}
-		// cout << endl;
-
 		while (client->second.extractLine(line))
 		{
-			CommandList parsed;
 			if (!Parser::parse(line, parsed))
 				continue;
-			for (CommandList::iterator it = parsed.begin();
-				 it != parsed.end(); ++it)
+			for (CommandList::iterator it = parsed.begin(); it != parsed.end(); ++it)
 			{
-				DispatchResult result = dispatchCommand(client->second, *it);
+				result = dispatchCommand(client->second, *it);
 				if (result == DISPATCH_QUIT)
 					return;
 				if (result == DISPATCH_UNKNOWN)
 				{
-					sendNumericReply(client->second, "421",
-						it->first + " :Unknown command");
+					sendNumericReply(client->second, "421", it->first + " :Unknown command");
 				}
 			}
 		}
@@ -359,7 +354,7 @@ void Server::run()
 }
 
 Server::DispatchResult Server::dispatchCommand(Client &client,
-	const CommandPairVector &command)
+											   const CommandPairVector &command)
 {
 	if (command.first == "PASS")
 	{
@@ -413,7 +408,8 @@ Server::DispatchResult Server::dispatchCommand(Client &client,
 	}
 	if (command.first == "PING")
 	{
-		Commands::PING(*this, Parser::getParam(command, PP_TARGET), client.getFd());
+		Commands::PING(*this, Parser::getParam(command, PP_TARGET),
+					   client.getFd());
 		return (DISPATCH_OK);
 	}
 	if (command.first == "QUIT")
