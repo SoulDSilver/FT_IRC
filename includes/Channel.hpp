@@ -56,7 +56,7 @@ public:
     void sendJoinMessages(const Client &client) const;
     void sendPartMessage(const Client &client, const string &reason) const;
     void broadcastMessage(const string &message, int senderFd) const;
-    void sendMessge(const string &message, int senderFd) const;
+    void sendMessage(const string &message, int senderFd) const;
 };
 
 #endif

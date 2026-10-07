@@ -203,14 +203,14 @@ bool Channel::isClientPresent(int fd) const
 	return (this->clients.find(fd) != this->clients.end());
 }
 
-void Channel::sendMessge(const string &message, int senderFd) const
+void Channel::sendMessage(const string &message, int senderFd) const
 {
 	string sms;
 	cout << "MSG" << endl;
 	map<int, Client>::const_iterator sender = clients.find(senderFd);
 	if (sender == clients.end())
 		return;
-	sms = ":" + this->name + " :" + message + "\r\n";
+	sms = ":" + sender->second.getNick() + " :" + message + "\r\n";
 	send(senderFd, sms.c_str(), sms.length(), 0);
 	
 }
