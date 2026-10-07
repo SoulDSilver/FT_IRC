@@ -1,4 +1,6 @@
 #include "Commands.hpp"
+#include "Server.hpp"
+#include "Channel.hpp"
 
 void Commands::PING(Server& server, const string& serverName, int fd){
 	if (serverName.empty())

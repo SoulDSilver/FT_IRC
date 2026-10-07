@@ -2,7 +2,7 @@
 
 #include  "irc.hpp"
 #include "Client.hpp"
-#include "Channel.hpp"
+
 
 class Client;
 class Channel;
@@ -15,14 +15,6 @@ class Commands
         string Parameters;
         string Prefix;
 
-    public:
-        Commands();
-        Commands(const string& command, const string& parameters, const string& prefix)
-            : Command(command), Parameters(parameters), Prefix(prefix) {}
-        Commands(const Commands& other);
-        Commands& operator=(const Commands& other);
-        ~Commands();
-        
     public:
         static void processCommands(Server& server, const CommandList& parsedCommands, int fd);
         
@@ -47,5 +39,6 @@ class Commands
         static void mode(Channel& channel, const string& mode);
         static void quit(Server& server, const string& reason, int fd);
         static void ping(Server& server, const string& serverName, int fd);
+        virtual void turnOn() = 0;
 
 };
