@@ -92,9 +92,14 @@ void Server::removeClients(int fd)
 	for (map<string,
 			 Channel>::iterator it = this->channels.begin();
 		 it != this->channels.end(); ++it)
+	{
+
 		if (it->second.isClientPresent(fd))
 			it->second.removeClient(clients.at(fd));
+	}
+
 	close(fd);
+	clientsByNick.erase(clients.at(fd).getNick());
 	clients.erase(fd);
 }
 
@@ -141,13 +146,9 @@ void Server::handleCap(Client &client, const CommandPairVector &command)
 
 bool Server::isClientInChannel(const string &channelName, int client_fd) const
 {
-	if (channels.count(channelName) == 1)
-	{
-		const map<int,
-				  Client> &channelClients = channels.at(channelName).getClients();
-		return (channelClients.find(client_fd) != channelClients.end());
-	}
-	return (false);
+	if (channels.count(channelName) == 0)
+		return (false);
+	return (channels.at(channelName).isClientPresent(client_fd));
 }
 
 bool Server::checkClientRegistered(Client &client)
@@ -155,6 +156,26 @@ bool Server::checkClientRegistered(Client &client)
 	if (client.hasUsername() && client.hasNick() && client.isPasswordAccepted() && client.isRegistered() == false && client.hasWelcome() == false)
 		return (true);
 	return (false);
+}
+
+const Channel *Server::getChannel(const string &channelName) const
+{
+	if (channels.count(channelName) == 0)
+		return (NULL);
+	return (&channels.at(channelName));
+}
+
+const Client *Server::getClientByNick(const string &nick) const
+{
+	if (clientsByNick.empty())
+	{
+		cout << "clientsByNick is empty" << endl;
+		return (NULL);
+	}
+	map<string, Client>::const_iterator it = clientsByNick.find(nick);
+	if (it != clientsByNick.end())
+		return (&it->second);
+	return (NULL);
 }
 
 void Server::removeChannel(const string &channelname)
@@ -199,12 +220,6 @@ void Server::sendPartMessages(const string &channelName, int fd,
 		removeChannel(channelName);
 }
 
-void Server::sendJoinMessages(const string &channelName, const Client &client)
-{
-	if (channelExists(channelName))
-		channels.at(channelName).sendJoinMessages(client);
-}
-
 void Server::create_socket()
 {
 	int yes;
@@ -240,6 +255,7 @@ void Server::createChannel(const string &channelName, Client &client)
 	channels.insert(make_pair(channelName, channel));
 	cout << GRE << "Channel <" << channelName << "> Created by Client <" << client.getNick() << ">" << WHI << endl;
 }
+
 void Server::addNewClient()
 {
 	struct sockaddr_in cliadd;
@@ -298,6 +314,9 @@ void Server::handleClientData(int fd)
 			removeClients(fd);
 			return;
 		}
+		if (checkClientRegistered(client->second))
+			clientsByNick.insert(make_pair(client->second.getNick(), client->second));
+
 		string data(buff);
 		client->second.appendInput(data);
 		cout << YEL << "Client <" << fd << "> Data: " << WHI;

@@ -1,6 +1,5 @@
 #include "Server.hpp"
 #include "Parser.hpp"
-
 namespace Verify
 {
 	enum ReturnError
@@ -73,7 +72,7 @@ void Server::handlePass(Client &client, const CommandPairVector &command)
 	{
 		sendNumericReply(client, "464", ":Password incorrect");
 		client.passfail = true;
-		return ;
+		return;
 	}
 
 	client.setPasswordAccepted();
